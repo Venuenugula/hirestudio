@@ -13,10 +13,12 @@ import { SectionNavigator } from "@/features/pages/components/section-navigator"
 import { ThemeEditor } from "@/features/pages/components/theme-editor"
 import { useCareersPageEditor } from "@/features/pages/hooks/use-careers-page-editor"
 import { getErrorMessage } from "@/lib/toast"
+import { useAuth } from "@/providers/auth-provider"
 import { useWorkspace } from "@/providers/workspace-provider"
 import { routes } from "@/routes/paths"
 
 export function CareersPageEditorPage() {
+  const { company } = useAuth()
   const { companyId, hasCompany } = useWorkspace()
   const editor = useCareersPageEditor(companyId)
 
@@ -126,7 +128,11 @@ export function CareersPageEditorPage() {
         </div>
 
         <div className="xl:sticky xl:top-20 xl:self-start">
-          <LivePreview draft={editor.draft} companyId={companyId} />
+          <LivePreview
+            draft={editor.draft}
+            companyId={companyId}
+            companyName={company?.name}
+          />
         </div>
       </div>
     </PageContainer>

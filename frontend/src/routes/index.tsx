@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { HomePage } from "@/features/auth/pages/home-page"
 import { LoginPage } from "@/features/auth/pages/login-page"
-import { CompanyPage } from "@/features/companies/pages/company-page"
+import { CompanyPage } from "@/features/company/pages/company-page"
 import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
 import { JobsPage } from "@/features/jobs/pages/jobs-page"
 import { CareersPageEditorPage } from "@/features/pages/pages/careers-page-editor-page"

@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+
+# Env (set on Vercel; keep .env.example tracked)
+.env
+.env.*
+!.env.example

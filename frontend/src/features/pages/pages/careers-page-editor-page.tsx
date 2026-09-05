@@ -112,7 +112,7 @@ export function CareersPageEditorPage() {
   }
 
   return (
-    <PageContainer className="max-w-7xl">
+    <PageContainer className="max-w-7xl overflow-x-hidden">
       <PageHeader
         badge={<EditorStatusBadge published={isPublished} />}
         title={
@@ -151,17 +151,18 @@ export function CareersPageEditorPage() {
         />
       </motion.div>
 
-      <div className="grid gap-6 xl:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]">
-        <aside className="xl:sticky xl:top-20 xl:self-start">
+      <div className="grid grid-cols-1 gap-4 md:gap-6 xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,1fr)]">
+        <aside className="order-1 min-w-0 xl:sticky xl:top-20 xl:self-start">
           <SectionNavigator
             sections={editor.draft.sections}
             expandedSectionId={editor.expandedSectionId}
             disabled={busy}
             onSelect={selectSection}
+            onReorder={editor.reorderSections}
           />
         </aside>
 
-        <div className="space-y-4">
+        <div className="order-3 min-w-0 space-y-5 md:order-2">
           <DesignStudio
             theme={editor.draft.theme}
             disabled={busy}
@@ -187,7 +188,7 @@ export function CareersPageEditorPage() {
           />
         </div>
 
-        <div className="xl:sticky xl:top-20 xl:self-start">
+        <div className="order-2 min-w-0 md:order-3 xl:sticky xl:top-20 xl:self-start">
           <AnimatePresence mode="wait">
             <motion.div
               key="preview"

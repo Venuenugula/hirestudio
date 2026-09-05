@@ -23,7 +23,7 @@ type SectionFieldsProps = {
 
 export function SectionFields({ section, disabled, onChange }: SectionFieldsProps) {
   return (
-    <div className="space-y-4 border-t border-border px-4 py-4">
+    <div className="space-y-5 border-t border-border px-5 py-5">
       <VariantSelect
         section={section}
         disabled={disabled}
@@ -31,11 +31,13 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
       />
 
       {"title" in section ? (
-        <Field label="Title" htmlFor={`${section.id}-title`}>
+        <Field label="Title" htmlFor={`${section.id}-title`} required>
           <Input
             id={`${section.id}-title`}
             value={section.title}
             disabled={disabled}
+            required
+            aria-required
             onChange={(event) =>
               onChange(section.id, { title: event.target.value })
             }
@@ -45,21 +47,25 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
 
       {section.type === "hero" ? (
         <>
-          <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
+          <Field label="Subtitle" htmlFor={`${section.id}-subtitle`} required>
             <Input
               id={`${section.id}-subtitle`}
               value={section.subtitle}
               disabled={disabled}
+              required
+              aria-required
               onChange={(event) =>
                 onChange(section.id, { subtitle: event.target.value })
               }
             />
           </Field>
-          <Field label="CTA label" htmlFor={`${section.id}-cta`}>
+          <Field label="CTA label" htmlFor={`${section.id}-cta`} required>
             <Input
               id={`${section.id}-cta`}
               value={section.ctaLabel}
               disabled={disabled}
+              required
+              aria-required
               onChange={(event) =>
                 onChange(section.id, { ctaLabel: event.target.value })
               }
@@ -69,12 +75,14 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
       ) : null}
 
       {section.type === "about" ? (
-        <Field label="Body" htmlFor={`${section.id}-body`}>
+        <Field label="Body" htmlFor={`${section.id}-body`} required>
           <Textarea
             id={`${section.id}-body`}
             value={section.body}
             disabled={disabled}
             rows={6}
+            required
+            aria-required
             onChange={(event) =>
               onChange(section.id, { body: event.target.value })
             }
@@ -92,12 +100,14 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
       ) : null}
 
       {section.type === "open_roles" ? (
-        <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
+        <Field label="Subtitle" htmlFor={`${section.id}-subtitle`} required>
           <Textarea
             id={`${section.id}-subtitle`}
             value={section.subtitle}
             disabled={disabled}
             rows={3}
+            required
+            aria-required
             onChange={(event) =>
               onChange(section.id, { subtitle: event.target.value })
             }
@@ -107,22 +117,26 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
 
       {section.type === "cta" ? (
         <>
-          <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
+          <Field label="Subtitle" htmlFor={`${section.id}-subtitle`} required>
             <Textarea
               id={`${section.id}-subtitle`}
               value={section.subtitle}
               disabled={disabled}
               rows={3}
+              required
+              aria-required
               onChange={(event) =>
                 onChange(section.id, { subtitle: event.target.value })
               }
             />
           </Field>
-          <Field label="Button label" htmlFor={`${section.id}-button`}>
+          <Field label="Button label" htmlFor={`${section.id}-button`} required>
             <Input
               id={`${section.id}-button`}
               value={section.buttonLabel}
               disabled={disabled}
+              required
+              aria-required
               onChange={(event) =>
                 onChange(section.id, { buttonLabel: event.target.value })
               }
@@ -173,11 +187,13 @@ function VariantSelect({
     ("variant" in section ? section.variant : undefined) ?? options[0]?.value
 
   return (
-    <Field label="Layout variant" htmlFor={`${section.id}-variant`}>
+    <Field label="Layout variant" htmlFor={`${section.id}-variant`} required>
       <select
         id={`${section.id}-variant`}
         value={value}
         disabled={disabled}
+        required
+        aria-required
         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
         onChange={(event) =>
           onChange(section.id, {
@@ -224,7 +240,13 @@ function BenefitsItemsEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <Label>Benefits</Label>
+        <Label>
+          Benefits
+          <span className="text-destructive" aria-hidden>
+            {" "}
+            *
+          </span>
+        </Label>
         <Button
           type="button"
           size="sm"
@@ -241,7 +263,7 @@ function BenefitsItemsEditor({
         {items.map((item, index) => (
           <li
             key={item.id}
-            className="space-y-3 rounded-md border border-border p-3"
+            className="space-y-3 rounded-lg border border-border bg-muted/20 p-4"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium">Benefit {index + 1}</p>
@@ -258,11 +280,17 @@ function BenefitsItemsEditor({
                 <Trash2 className="size-4" />
               </Button>
             </div>
-            <Field label="Title" htmlFor={`${sectionId}-${item.id}-title`}>
+            <Field
+              label="Title"
+              htmlFor={`${sectionId}-${item.id}-title`}
+              required
+            >
               <Input
                 id={`${sectionId}-${item.id}-title`}
                 value={item.title}
                 disabled={disabled}
+                required
+                aria-required
                 onChange={(event) =>
                   updateItem(item.id, { title: event.target.value })
                 }
@@ -271,12 +299,15 @@ function BenefitsItemsEditor({
             <Field
               label="Description"
               htmlFor={`${sectionId}-${item.id}-description`}
+              required
             >
               <Textarea
                 id={`${sectionId}-${item.id}-description`}
                 value={item.description}
                 disabled={disabled}
                 rows={3}
+                required
+                aria-required
                 onChange={(event) =>
                   updateItem(item.id, { description: event.target.value })
                 }
@@ -292,15 +323,25 @@ function BenefitsItemsEditor({
 function Field({
   label,
   htmlFor,
+  required,
   children,
 }: {
   label: string
   htmlFor: string
+  required?: boolean
   children: ReactNode
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor}>
+        {label}
+        {required ? (
+          <span className="text-destructive" aria-hidden>
+            {" "}
+            *
+          </span>
+        ) : null}
+      </Label>
       {children}
     </div>
   )

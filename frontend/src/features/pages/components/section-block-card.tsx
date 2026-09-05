@@ -92,19 +92,19 @@ export function SectionBlockCard({
       ref={setNodeRef}
       id={`section-block-${section.id}`}
       style={{
-        transform: CSS.Transform.toString(transform),
+        transform: CSS.Translate.toString(transform),
         transition,
       }}
       className={cn(
         "scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card transition-[box-shadow,border-color,opacity]",
         "hover:shadow-sm",
-        expanded && "border-ring shadow-sm",
+        expanded && "border-primary/40 shadow-md",
         hidden && "border-dashed opacity-75",
-        isDragging && "z-20 scale-[1.01] opacity-90 shadow-lg ring-2 ring-ring/30",
+        isDragging && "z-20 opacity-40 shadow-none ring-0",
       )}
       aria-label={`${sectionLabel(section.type)} section`}
     >
-      <div className="flex items-center gap-1 px-2 py-2">
+      <div className="flex items-center gap-1.5 px-3 py-3">
         <button
           type="button"
           ref={setActivatorNodeRef}
@@ -122,7 +122,7 @@ export function SectionBlockCard({
 
         <div
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-md",
+            "flex size-9 shrink-0 items-center justify-center rounded-lg",
             expanded ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
           )}
           aria-hidden
@@ -139,7 +139,7 @@ export function SectionBlockCard({
           aria-controls={`section-fields-${section.id}`}
         >
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">
+            <span className="text-sm font-semibold tracking-tight">
               {sectionPreviewTitle(section)}
             </span>
             <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
@@ -151,7 +151,7 @@ export function SectionBlockCard({
               </span>
             ) : null}
           </div>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {expanded ? "Editing" : "Click to edit"}
           </p>
         </button>

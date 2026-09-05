@@ -4,6 +4,9 @@
 
 | Document | Purpose |
 |----------|---------|
+| [README.md](../README.md) | How to run, user guide, improvements |
+| [TECH_SPEC.md](../TECH_SPEC.md) | Assumptions, architecture, schema, test plan |
+| [AGENT_LOG.md](../AGENT_LOG.md) | How AI was used while building |
 | [prd.md](../prd.md) | Product requirements |
 | [architecture.md](../architecture.md) | System architecture |
 | [AGENTS.md](../AGENTS.md) | Engineering guidelines for Cursor |

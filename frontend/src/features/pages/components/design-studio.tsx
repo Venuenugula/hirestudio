@@ -54,7 +54,7 @@ export function DesignStudio({
                 className={cn(
                   "rounded-xl border px-3 py-3 text-left transition-colors",
                   active
-                    ? "border-teal-700 bg-teal-50"
+                    ? "border-primary bg-primary/10 shadow-sm"
                     : "border-border hover:bg-accent",
                   disabled && "opacity-50",
                 )}
@@ -127,6 +127,7 @@ export function DesignStudio({
               label="Primary color"
               value={theme.primaryColor}
               disabled={disabled}
+              required
               onChange={(primaryColor) =>
                 onChange({ primaryColor, themePackId: "custom" })
               }
@@ -136,6 +137,7 @@ export function DesignStudio({
               label="Secondary color"
               value={theme.secondaryColor}
               disabled={disabled}
+              required
               onChange={(secondaryColor) =>
                 onChange({ secondaryColor, themePackId: "custom" })
               }
@@ -156,6 +158,7 @@ export function DesignStudio({
             label="Font"
             value={theme.fontId ?? "inter"}
             disabled={disabled}
+            required
             options={FONT_OPTIONS.map((option) => ({
               value: option.id,
               label: option.label,
@@ -168,6 +171,7 @@ export function DesignStudio({
             label="Radius"
             value={theme.radiusId ?? "modern"}
             disabled={disabled}
+            required
             options={RADIUS_OPTIONS.map((option) => ({
               value: option.id,
               label: option.label,
@@ -180,6 +184,7 @@ export function DesignStudio({
             label="Button"
             value={theme.buttonStyle ?? "filled"}
             disabled={disabled}
+            required
             options={BUTTON_STYLE_OPTIONS.map((option) => ({
               value: option.id,
               label: option.label,
@@ -202,17 +207,27 @@ function ColorField({
   value,
   disabled,
   onChange,
+  required,
 }: {
   id: string
   label: string
   value: string
   disabled?: boolean
   onChange: (value: string) => void
+  required?: boolean
 }) {
   const pickerValue = /^#[0-9A-Fa-f]{6}$/.test(value) ? value : "#0F766E"
   return (
     <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>
+        {label}
+        {required ? (
+          <span className="text-destructive" aria-hidden>
+            {" "}
+            *
+          </span>
+        ) : null}
+      </Label>
       <div className="flex items-center gap-2">
         <Input
           type="color"
@@ -225,6 +240,8 @@ function ColorField({
           id={id}
           value={value}
           disabled={disabled}
+          required={required}
+          aria-required={required}
           onChange={(event) => onChange(event.target.value)}
         />
       </div>
@@ -238,19 +255,31 @@ function SelectField({
   options,
   disabled,
   onChange,
+  required,
 }: {
   label: string
   value: string
   options: Array<{ value: string; label: string }>
   disabled?: boolean
   onChange: (value: string) => void
+  required?: boolean
 }) {
   return (
     <label className="space-y-2 text-sm">
-      <span className="font-medium">{label}</span>
+      <span className="font-medium">
+        {label}
+        {required ? (
+          <span className="text-destructive" aria-hidden>
+            {" "}
+            *
+          </span>
+        ) : null}
+      </span>
       <select
         value={value}
         disabled={disabled}
+        required={required}
+        aria-required={required}
         onChange={(event) => onChange(event.target.value)}
         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
       >

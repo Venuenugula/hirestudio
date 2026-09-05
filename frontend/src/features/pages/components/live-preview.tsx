@@ -144,14 +144,14 @@ export function LivePreview({
 
   const shell = (
     <div
-      className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
-        fullscreen && "h-full rounded-none border-0 shadow-none",
-      )}
-    >
+        className={cn(
+          "flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+          fullscreen && "h-full rounded-none border-0 shadow-none",
+        )}
+      >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold">Live preview</h2>
+          <h2 className="text-sm font-semibold tracking-tight">Live preview</h2>
           <p className="truncate text-xs text-muted-foreground">
             Exact public renderer · draft data · hidden blocks excluded
           </p>

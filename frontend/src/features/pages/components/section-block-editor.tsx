@@ -120,6 +120,13 @@ export function SectionBlockEditor({
     if (!over || active.id === over.id) {
       return
     }
+
+    const oldIndex = sectionIds.indexOf(String(active.id))
+    const newIndex = sectionIds.indexOf(String(over.id))
+    if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
+      return
+    }
+
     onReorder(String(active.id), String(over.id))
   }
 
@@ -128,9 +135,9 @@ export function SectionBlockEditor({
   }
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h2 className="text-sm font-semibold">Page blocks</h2>
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="text-sm font-semibold tracking-tight">Page blocks</h2>
         <p className="text-xs text-muted-foreground">
           Drag to reorder. Only one block stays open at a time.
         </p>
@@ -156,12 +163,13 @@ export function SectionBlockEditor({
             items={sectionIds}
             strategy={verticalListSortingStrategy}
           >
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               <AnimatePresence initial={false}>
                 {sections.map((section, index) => (
                   <motion.li
                     key={section.id}
-                    layout
+                    // Disable layout animation while dragging so dnd-kit transforms win.
+                    layout={activeId === null}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}

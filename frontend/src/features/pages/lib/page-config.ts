@@ -249,7 +249,9 @@ export function reorderSections(
   if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
     return sections
   }
-  const next = [...sections]
+
+  // Immutable splice keeps React state updates predictable for autosave.
+  const next = sections.slice()
   const [moved] = next.splice(oldIndex, 1)
   next.splice(newIndex, 0, moved)
   return next

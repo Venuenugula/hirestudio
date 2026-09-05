@@ -1,0 +1,39 @@
+# Render Blueprint — backend API
+# https://render.com/docs/blueprint-spec
+#
+# After first deploy, set CORS_ORIGINS to your Vercel URL(s), e.g.:
+#   https://your-app.vercel.app,https://your-custom-domain.com
+
+services:
+  - type: web
+    name: career-page-builder-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install .
+    preDeployCommand: alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: APP_NAME
+        value: Career Page Builder API
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

@@ -61,4 +61,4 @@ Animations
 
 Testing
 
-Deployment
+Deployment — see [docs/deployment.md](docs/deployment.md) (Render API + Vercel frontend)

@@ -1,3 +1,5 @@
+import { resolveAssetUrl } from "@/lib/asset-url"
+
 type BrandPreviewProps = {
   name: string
   slug: string
@@ -22,6 +24,8 @@ export function BrandPreview({
   const displayName = name.trim() || "Your company"
   const safePrimary = /^#/.test(primaryColor) ? primaryColor : "#0F766E"
   const safeSecondary = /^#/.test(secondaryColor) ? secondaryColor : "#F8FAFC"
+  const resolvedLogo = resolveAssetUrl(logoUrl)
+  const resolvedBanner = resolveAssetUrl(bannerUrl)
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -36,9 +40,9 @@ export function BrandPreview({
         className="relative h-28 overflow-hidden"
         style={{ backgroundColor: safeSecondary }}
       >
-        {bannerUrl ? (
+        {resolvedBanner ? (
           <img
-            src={bannerUrl}
+            src={resolvedBanner}
             alt=""
             className="absolute inset-0 size-full object-cover"
           />
@@ -58,8 +62,8 @@ export function BrandPreview({
             className="flex size-16 items-center justify-center overflow-hidden rounded-2xl border-4 border-card shadow-md"
             style={{ backgroundColor: safePrimary }}
           >
-            {logoUrl ? (
-              <img src={logoUrl} alt="" className="size-full object-cover" />
+            {resolvedLogo ? (
+              <img src={resolvedLogo} alt="" className="size-full object-cover" />
             ) : (
               <span className="text-xl font-bold text-white">
                 {displayName.slice(0, 1).toUpperCase()}

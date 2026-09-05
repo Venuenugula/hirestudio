@@ -7,6 +7,7 @@ import {
   resolveRadius,
 } from "@/features/pages/lib/design-system"
 import { PUBLIC_DESIGN } from "@/features/public/lib/public-design"
+import { resolveAssetUrl } from "@/lib/asset-url"
 import { cn } from "@/lib/utils"
 
 type PublicShellProps = {
@@ -31,6 +32,7 @@ export function PublicShell({
   const fontFamily = resolveFontFamily(theme.fontId)
   const radius = resolveRadius(theme.radiusId)
   const styleId = theme.styleId ?? "professional"
+  const logoSrc = resolveAssetUrl(company.logo_url)
 
   return (
     <div
@@ -70,9 +72,9 @@ export function PublicShell({
         )}
       >
         <div className="mx-auto flex max-w-5xl items-center gap-3">
-          {company.logo_url ? (
+          {logoSrc ? (
             <img
-              src={company.logo_url}
+              src={logoSrc}
               alt=""
               className="size-9 object-cover"
               style={{ borderRadius: "var(--public-radius)" }}

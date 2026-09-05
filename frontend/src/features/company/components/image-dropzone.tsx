@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, type DragEvent } from "react"
 import { ImagePlus, Loader2, Trash2, Upload } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { resolveAssetUrl } from "@/lib/asset-url"
 import { cn } from "@/lib/utils"
 
 type ImageDropzoneProps = {
@@ -28,6 +29,7 @@ export function ImageDropzone({
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const previewSrc = resolveAssetUrl(value)
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -122,9 +124,9 @@ export function ImageDropzone({
         }}
         onDrop={onDrop}
       >
-        {value ? (
+        {previewSrc ? (
           <img
-            src={value}
+            src={previewSrc}
             alt=""
             className="absolute inset-0 size-full object-cover"
           />

@@ -50,3 +50,7 @@ npm run dev
 - API: http://localhost:8000/api/v1/health
 - Docs: http://localhost:8000/docs
 - App: http://localhost:5173
+
+## Deployment
+
+Backend on Render, frontend on Vercel (Neon for Postgres). See [docs/deployment.md](docs/deployment.md).

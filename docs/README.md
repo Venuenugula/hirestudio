@@ -20,4 +20,10 @@ One `CareersPage` row per company:
 
 Publish is an atomic copy of draft → published.
 
+## Runbooks
+
+| Document | Purpose |
+|----------|---------|
+| [deployment.md](./deployment.md) | Deploy backend (Render) + frontend (Vercel) |
+
 Use this folder for deeper design notes, ADRs, and runbooks as the project grows.

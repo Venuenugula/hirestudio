@@ -13,4 +13,9 @@ export const queryKeys = {
     byCompany: (companyId: string, filters: Record<string, unknown> = {}) =>
       ["jobs", "company", companyId, filters] as const,
   },
+  public: {
+    site: (slug: string) => ["public", "site", slug] as const,
+    job: (slug: string, jobId: string) =>
+      ["public", "job", slug, jobId] as const,
+  },
 } as const

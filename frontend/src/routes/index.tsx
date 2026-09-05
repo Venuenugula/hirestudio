@@ -6,6 +6,8 @@ import { CompanyPage } from "@/features/company/pages/company-page"
 import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
 import { JobsPage } from "@/features/jobs/pages/jobs-page"
 import { CareersPageEditorPage } from "@/features/pages/pages/careers-page-editor-page"
+import { PublicCareersPage } from "@/features/public/pages/public-careers-page"
+import { PublicJobDetailPage } from "@/features/public/pages/public-job-detail-page"
 import { AppLayout } from "@/layouts/app-layout"
 import { AuthLayout } from "@/layouts/auth-layout"
 import { RootLayout } from "@/layouts/root-layout"
@@ -19,6 +21,12 @@ export function AppRouter() {
           <Route element={<AuthLayout />}>
             <Route path={routes.login} element={<LoginPage />} />
           </Route>
+
+          <Route path="/careers/:slug" element={<PublicCareersPage />} />
+          <Route
+            path="/careers/:slug/jobs/:jobId"
+            element={<PublicJobDetailPage />}
+          />
 
           <Route element={<AppLayout />}>
             <Route index element={<HomePage />} />

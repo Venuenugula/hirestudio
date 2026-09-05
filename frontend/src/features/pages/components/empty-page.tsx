@@ -9,8 +9,8 @@ export function EmptyPage() {
   return (
     <EmptyState
       icon={FileStack}
-      title="No active company"
-      description="Create or select a company first. The careers page builder uses the temporary workspace company id."
+      title="Set up your company first"
+      description="The careers page builder needs an active company workspace before you can edit sections."
       action={
         <Button asChild>
           <Link to={routes.company}>Go to Company</Link>

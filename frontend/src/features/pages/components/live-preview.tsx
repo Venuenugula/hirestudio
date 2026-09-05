@@ -116,6 +116,11 @@ export function LivePreview({
     setZoom((current) => clampPreviewZoom(current - PREVIEW_ZOOM_STEP))
   }, [])
 
+  const handleResetZoom = useCallback(() => {
+    setFitWidth(false)
+    setZoom(DEFAULT_PREVIEW_ZOOM)
+  }, [])
+
   const handleFitWidthToggle = useCallback(() => {
     setFitWidth((current) => {
       if (current) {
@@ -153,6 +158,7 @@ export function LivePreview({
         onDeviceChange={handleDeviceChange}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
+        onResetZoom={handleResetZoom}
         onFitWidthToggle={handleFitWidthToggle}
         onFullscreenToggle={() => setFullscreen((current) => !current)}
       />

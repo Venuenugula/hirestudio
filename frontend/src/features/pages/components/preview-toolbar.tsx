@@ -1,7 +1,9 @@
+import { motion } from "framer-motion"
 import {
   Maximize2,
   Minimize2,
   Monitor,
+  RotateCcw,
   Smartphone,
   Tablet,
   ZoomIn,
@@ -25,6 +27,7 @@ type PreviewToolbarProps = {
   onDeviceChange: (device: PreviewDevice) => void
   onZoomIn: () => void
   onZoomOut: () => void
+  onResetZoom: () => void
   onFitWidthToggle: () => void
   onFullscreenToggle: () => void
 }
@@ -43,6 +46,7 @@ export function PreviewToolbar({
   onDeviceChange,
   onZoomIn,
   onZoomOut,
+  onResetZoom,
   onFitWidthToggle,
   onFullscreenToggle,
 }: PreviewToolbarProps) {
@@ -63,14 +67,22 @@ export function PreviewToolbar({
               size="sm"
               variant={active ? "secondary" : "ghost"}
               className={cn(
-                "h-8 gap-1.5 px-2.5",
+                "relative h-8 gap-1.5 px-2.5",
                 active && "bg-background shadow-xs",
               )}
               aria-pressed={active}
+              title={`${preset.label} (${preset.width}px)`}
               onClick={() => onDeviceChange(preset.id)}
             >
               <Icon className="size-3.5" />
               <span className="hidden sm:inline">{preset.label}</span>
+              {active ? (
+                <motion.span
+                  layoutId="preview-device-pill"
+                  className="absolute inset-0 -z-10 rounded-md bg-background shadow-xs"
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                />
+              ) : null}
             </Button>
           )
         })}
@@ -82,12 +94,16 @@ export function PreviewToolbar({
           size="icon-sm"
           variant="ghost"
           aria-label="Zoom out"
+          title="Zoom out"
           disabled={fitWidth || zoom <= MIN_PREVIEW_ZOOM}
           onClick={onZoomOut}
         >
           <ZoomOut className="size-4" />
         </Button>
-        <span className="min-w-12 text-center text-xs font-medium tabular-nums text-muted-foreground">
+        <span
+          className="min-w-12 text-center text-xs font-medium tabular-nums text-muted-foreground"
+          aria-live="polite"
+        >
           {fitWidth ? "Fit" : `${zoom}%`}
         </span>
         <Button
@@ -95,10 +111,22 @@ export function PreviewToolbar({
           size="icon-sm"
           variant="ghost"
           aria-label="Zoom in"
+          title="Zoom in"
           disabled={fitWidth || zoom >= MAX_PREVIEW_ZOOM}
           onClick={onZoomIn}
         >
           <ZoomIn className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          size="icon-sm"
+          variant="ghost"
+          aria-label="Reset zoom to 100%"
+          title="Reset zoom"
+          disabled={fitWidth || zoom === 100}
+          onClick={onResetZoom}
+        >
+          <RotateCcw className="size-4" />
         </Button>
 
         <Button
@@ -106,6 +134,7 @@ export function PreviewToolbar({
           size="sm"
           variant={fitWidth ? "secondary" : "ghost"}
           aria-pressed={fitWidth}
+          title="Fit Width"
           onClick={onFitWidthToggle}
         >
           Fit Width
@@ -116,6 +145,7 @@ export function PreviewToolbar({
           size="icon-sm"
           variant="ghost"
           aria-label={fullscreen ? "Exit fullscreen preview" : "Fullscreen preview"}
+          title={fullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
           onClick={onFullscreenToggle}
         >
           {fullscreen ? (
@@ -125,6 +155,10 @@ export function PreviewToolbar({
           )}
         </Button>
       </div>
+
+      <p className="basis-full text-[10px] text-muted-foreground sm:basis-auto sm:ml-0">
+        Shortcuts: ⌘/Ctrl+S publish · Esc collapse · Delete remove section
+      </p>
     </div>
   )
 }

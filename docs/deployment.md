@@ -28,9 +28,10 @@ Backend → [Render](https://render.com) · Frontend → [Vercel](https://vercel
 | Root Directory | `backend` |
 | Runtime | Python 3 |
 | Build Command | `pip install .` |
-| Pre-Deploy Command | `alembic upgrade head` |
-| Start Command | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| Start Command | `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
 | Health Check Path | `/api/v1/health` |
+
+Free tier does not support Pre-Deploy Command; migrations run at process start instead.
 
 **Environment variables**
 

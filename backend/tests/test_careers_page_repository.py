@@ -14,6 +14,16 @@ def test_create_if_missing_creates_blank_page(db_session, company) -> None:
     assert page.published_at is None
 
 
+def test_create_with_draft_config(db_session, company) -> None:
+    repo = CareersPageRepository(db_session)
+    draft = {"sections": [{"type": "hero", "title": "Hello"}]}
+
+    page = repo.create(company.id, draft_config=draft)
+
+    assert page.draft_config == draft
+    assert page.published_config == {}
+
+
 def test_create_if_missing_returns_existing(db_session, company) -> None:
     repo = CareersPageRepository(db_session)
     first = repo.create_if_missing(company.id)

@@ -34,13 +34,36 @@ export function setUnauthorizedHandler(handler: (() => void) | null) {
 async function parseErrorDetail(response: Response): Promise<string> {
   try {
     const data: unknown = await response.json()
-    if (
-      typeof data === "object" &&
-      data !== null &&
-      "detail" in data &&
-      typeof (data as { detail: unknown }).detail === "string"
-    ) {
-      return (data as { detail: string }).detail
+    if (typeof data === "object" && data !== null && "detail" in data) {
+      const detail = (data as { detail: unknown }).detail
+      if (typeof detail === "string") {
+        return detail
+      }
+      if (Array.isArray(detail)) {
+        const messages = detail
+          .map((item) => {
+            if (
+              typeof item === "object" &&
+              item !== null &&
+              "msg" in item &&
+              typeof (item as { msg: unknown }).msg === "string"
+            ) {
+              const loc = (item as { loc?: unknown }).loc
+              const path = Array.isArray(loc)
+                ? loc
+                    .filter((part) => typeof part === "string")
+                    .join(".")
+                : ""
+              const msg = (item as { msg: string }).msg
+              return path ? `${path}: ${msg}` : msg
+            }
+            return null
+          })
+          .filter((message): message is string => Boolean(message))
+        if (messages.length > 0) {
+          return messages.join("; ")
+        }
+      }
     }
   } catch {
     // Fall through to status text.

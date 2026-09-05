@@ -174,20 +174,12 @@ export function useCareersPageEditor(companyId: string | null) {
             if (section.id !== sectionId) {
               return section
             }
-            if (section.type === "hero") {
-              return {
-                ...section,
-                ...patch,
-                type: "hero" as const,
-                id: section.id,
-              }
-            }
             return {
               ...section,
               ...patch,
-              type: "about" as const,
+              type: section.type,
               id: section.id,
-            }
+            } as PageSection
           }),
         }
       })

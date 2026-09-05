@@ -13,7 +13,12 @@ import {
 } from "@/features/jobs/constants"
 import { useJobsQuery } from "@/features/jobs/hooks/use-jobs-query"
 import type { Job } from "@/features/jobs/types"
-import type { PageConfig, PageSection } from "@/features/pages/types"
+import type {
+  BenefitsSection,
+  CtaSection,
+  PageConfig,
+  PageSection,
+} from "@/features/pages/types"
 
 type LivePreviewProps = {
   draft: PageConfig
@@ -24,6 +29,9 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
   const { theme, sections } = draft
   const jobsQuery = useJobsQuery(companyId, { is_active: true })
   const activeJobs = jobsQuery.data?.items ?? []
+  const hasOpenRolesSection = sections.some(
+    (section) => section.type === "open_roles",
+  )
 
   return (
     <Card className="overflow-hidden">
@@ -52,9 +60,19 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
           ) : (
             <>
               {sections.map((section) => (
-                <PreviewSection key={section.id} section={section} />
+                <PreviewSection
+                  key={section.id}
+                  section={section}
+                  jobs={activeJobs}
+                />
               ))}
-              <JobsPreviewSection jobs={activeJobs} />
+              {!hasOpenRolesSection ? (
+                <JobsPreviewSection
+                  jobs={activeJobs}
+                  title="Open roles"
+                  subtitle={undefined}
+                />
+              ) : null}
             </>
           )}
         </div>
@@ -63,7 +81,13 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
   )
 }
 
-function PreviewSection({ section }: { section: PageSection }) {
+function PreviewSection({
+  section,
+  jobs,
+}: {
+  section: PageSection
+  jobs: Job[]
+}) {
   if (section.type === "hero") {
     return (
       <section className="px-6 py-16 md:px-10 md:py-20">
@@ -92,56 +116,136 @@ function PreviewSection({ section }: { section: PageSection }) {
     )
   }
 
+  if (section.type === "about") {
+    return (
+      <section className="border-t border-black/10 px-6 py-12 md:px-10">
+        <div className="mx-auto max-w-3xl space-y-3">
+          <h3 className="text-2xl font-semibold tracking-tight">
+            {section.title || "About"}
+          </h3>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed opacity-80 md:text-base">
+            {section.body || "Add your company story."}
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  if (section.type === "benefits") {
+    return <BenefitsPreviewSection section={section} />
+  }
+
+  if (section.type === "open_roles") {
+    return (
+      <JobsPreviewSection
+        jobs={jobs}
+        title={section.title}
+        subtitle={section.subtitle}
+      />
+    )
+  }
+
+  return <CtaPreviewSection section={section} />
+}
+
+function BenefitsPreviewSection({ section }: { section: BenefitsSection }) {
   return (
     <section className="border-t border-black/10 px-6 py-12 md:px-10">
-      <div className="mx-auto max-w-3xl space-y-3">
+      <div className="mx-auto max-w-3xl space-y-6">
         <h3 className="text-2xl font-semibold tracking-tight">
-          {section.title || "About"}
+          {section.title || "Benefits"}
         </h3>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed opacity-80 md:text-base">
-          {section.body || "Add your company story."}
-        </p>
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {section.items.map((item) => (
+            <li
+              key={item.id}
+              className="rounded-lg border border-black/10 px-4 py-3"
+            >
+              <p className="font-medium">{item.title || "Benefit"}</p>
+              <p className="mt-1 text-sm opacity-75">
+                {item.description || "Add a short description."}
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )
 }
 
-function JobsPreviewSection({ jobs }: { jobs: Job[] }) {
-  if (jobs.length === 0) {
-    return null
-  }
+function CtaPreviewSection({ section }: { section: CtaSection }) {
+  return (
+    <section className="border-t border-black/10 px-6 py-14 md:px-10">
+      <div className="mx-auto max-w-3xl space-y-4 text-center">
+        <h3 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          {section.title || "Ready to join us?"}
+        </h3>
+        <p className="mx-auto max-w-xl text-sm opacity-80 md:text-base">
+          {section.subtitle || "Browse open roles or check back soon."}
+        </p>
+        <button
+          type="button"
+          className="rounded-md px-4 py-2 text-sm font-medium"
+          style={{
+            backgroundColor: "var(--preview-primary)",
+            color: "var(--preview-secondary)",
+          }}
+        >
+          {section.buttonLabel || "See open roles"}
+        </button>
+      </div>
+    </section>
+  )
+}
 
+function JobsPreviewSection({
+  jobs,
+  title,
+  subtitle,
+}: {
+  jobs: Job[]
+  title: string
+  subtitle: string | undefined
+}) {
   return (
     <section className="border-t border-black/10 px-6 py-12 md:px-10">
       <div className="mx-auto max-w-3xl space-y-4">
-        <h3 className="text-2xl font-semibold tracking-tight">Open roles</h3>
-        <ul className="space-y-3">
-          {jobs.map((job) => (
-            <li
-              key={job.id}
-              className="rounded-lg border border-black/10 px-4 py-3"
-              style={{
-                borderColor: "color-mix(in oklab, currentColor 15%, transparent)",
-              }}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <p className="font-medium">{job.title}</p>
-                <p className="text-xs opacity-60">
-                  {formatRelativePostedAt(job.posted_at)}
+        <div className="space-y-2">
+          <h3 className="text-2xl font-semibold tracking-tight">
+            {title || "Open roles"}
+          </h3>
+          {subtitle ? <p className="text-sm opacity-75">{subtitle}</p> : null}
+        </div>
+        {jobs.length === 0 ? (
+          <p className="rounded-md border border-dashed border-black/15 px-4 py-8 text-center text-sm opacity-70">
+            No active roles yet. Publish a job to show it here.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {jobs.map((job) => (
+              <li
+                key={job.id}
+                className="rounded-lg border border-black/10 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium">{job.title}</p>
+                  <p className="text-xs opacity-60">
+                    {formatRelativePostedAt(job.posted_at)}
+                  </p>
+                </div>
+                <p className="text-sm opacity-75">
+                  {job.department} · {job.location} ·{" "}
+                  {formatJobLabel(job.work_policy)}
                 </p>
-              </div>
-              <p className="text-sm opacity-75">
-                {job.department} · {job.location} ·{" "}
-                {formatJobLabel(job.work_policy)}
-              </p>
-              <p className="text-sm opacity-70">
-                {formatJobLabel(job.experience_level)} ·{" "}
-                {formatJobLabel(job.job_type)}
-                {job.salary_range ? ` · ${job.salary_range}` : ""}
-              </p>
-            </li>
-          ))}
-        </ul>
+                <p className="text-sm opacity-70">
+                  {formatJobLabel(job.experience_level)} ·{" "}
+                  {formatJobLabel(job.job_type)}
+                  {job.salary_range ? ` · ${job.salary_range}` : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   )

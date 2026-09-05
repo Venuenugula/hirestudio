@@ -70,7 +70,7 @@ python -m app.scripts.seed_demo
 
 Creates demo company `demo-careers`, recruiter user, published careers page, and 150 sample jobs.
 
-Default login: `demo@demo-careers.test` / `demo-password-123`
+Default login: `demo@demo-careers.com` / `demo-password-123`
 
 Public page: `/careers/demo-careers`. Re-running the seed wipe-reloads demo jobs.
 

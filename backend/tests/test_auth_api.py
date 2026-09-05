@@ -28,6 +28,22 @@ def test_register_login_and_me(client, unique_slug: str) -> None:
     assert body["company"]["id"] == registered["company"]["id"]
 
 
+def test_register_creates_starter_careers_page(client, unique_slug: str) -> None:
+    """Registration must wire CareersPageService and seed the default template."""
+    registered = register_and_login(client, unique_slug, company_name="Northwind")
+    headers = auth_header(registered["access_token"])
+
+    response = client.get("/api/v1/careers-page/me", headers=headers)
+    assert response.status_code == 200
+    draft = response.json()["draft_config"]
+    assert draft["template"]["id"] == "professional-starter"
+    assert draft["template"]["version"] == 1
+    types = [section["type"] for section in draft["sections"]]
+    assert types == ["hero", "about", "benefits", "open_roles", "cta"]
+    assert "Northwind" in draft["sections"][0]["title"]
+    assert response.json()["published_at"] is None
+
+
 def test_login_invalid_credentials(client, unique_slug: str) -> None:
     register_and_login(client, unique_slug)
     response = client.post(

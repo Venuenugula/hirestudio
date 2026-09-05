@@ -8,7 +8,6 @@ from app.core.security import (
 )
 from app.models.company import Company
 from app.models.user import User
-from app.repositories.careers_page_repository import CareersPageRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import (
@@ -19,6 +18,7 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.schemas.company import CompanyResponse
+from app.services.careers_page_service import CareersPageService
 from app.utils.slug import normalize_slug
 
 
@@ -30,12 +30,12 @@ class AuthService:
         db: Session,
         user_repository: UserRepository | None = None,
         company_repository: CompanyRepository | None = None,
-        careers_page_repository: CareersPageRepository | None = None,
+        careers_page_service: CareersPageService | None = None,
     ) -> None:
         self._db = db
         self._users = user_repository or UserRepository(db)
         self._companies = company_repository or CompanyRepository(db)
-        self._careers_pages = careers_page_repository or CareersPageRepository(db)
+        self._careers_pages = careers_page_service or CareersPageService(db)
 
     def register(self, payload: RegisterRequest) -> TokenResponse:
         email = payload.email.strip().lower()
@@ -64,7 +64,7 @@ class AuthService:
         )
         user = self._users.create_user(user)
 
-        self._careers_pages.create_if_missing(company.id)
+        self._careers_pages.ensure_page_for_company(company)
 
         self._db.commit()
         self._db.refresh(company)

@@ -1,8 +1,13 @@
 import type {
   AboutSection,
+  BenefitItem,
+  BenefitsSection,
+  CtaSection,
   HeroSection,
+  OpenRolesSection,
   PageConfig,
   PageSection,
+  PageTemplateMeta,
   PageTheme,
   SectionType,
 } from "@/features/pages/types"
@@ -28,7 +33,7 @@ export function createHeroSection(
     id: createId(),
     type: "hero",
     title: "Join our team",
-    subtitle: "Build meaningful products with people who care.",
+    subtitle: "Help us build the future. Explore opportunities to grow your career.",
     ctaLabel: "View open roles",
     ...overrides,
   }
@@ -41,13 +46,89 @@ export function createAboutSection(
     id: createId(),
     type: "about",
     title: "About us",
-    body: "Tell candidates who you are and why your mission matters.",
+    body: "Customize this section to tell candidates about your mission, culture, and values.",
+    ...overrides,
+  }
+}
+
+export function createBenefitItem(
+  overrides: Partial<Omit<BenefitItem, "id">> = {},
+): BenefitItem {
+  return {
+    id: createId(),
+    title: "New benefit",
+    description: "Describe what candidates get.",
+    ...overrides,
+  }
+}
+
+export function createBenefitsSection(
+  overrides: Partial<Omit<BenefitsSection, "type" | "id">> = {},
+): BenefitsSection {
+  return {
+    id: createId(),
+    type: "benefits",
+    title: "Benefits & perks",
+    items: [
+      createBenefitItem({
+        title: "Flexible Work",
+        description: "Work in a way that fits your life.",
+      }),
+      createBenefitItem({
+        title: "Learning Budget",
+        description: "Invest in courses, books, and conferences.",
+      }),
+      createBenefitItem({
+        title: "Health Insurance",
+        description: "Comprehensive coverage for you and your family.",
+      }),
+      createBenefitItem({
+        title: "Career Growth",
+        description: "Clear paths and opportunities to take on bigger challenges.",
+      }),
+    ],
+    ...overrides,
+  }
+}
+
+export function createOpenRolesSection(
+  overrides: Partial<Omit<OpenRolesSection, "type" | "id">> = {},
+): OpenRolesSection {
+  return {
+    id: createId(),
+    type: "open_roles",
+    title: "Open roles",
+    subtitle: "Find a role that matches your skills and ambitions.",
+    ...overrides,
+  }
+}
+
+export function createCtaSection(
+  overrides: Partial<Omit<CtaSection, "type" | "id">> = {},
+): CtaSection {
+  return {
+    id: createId(),
+    type: "cta",
+    title: "Ready to make an impact?",
+    subtitle: "Browse our open positions.",
+    buttonLabel: "See open roles",
     ...overrides,
   }
 }
 
 export function createSection(type: SectionType): PageSection {
-  return type === "hero" ? createHeroSection() : createAboutSection()
+  switch (type) {
+    case "hero":
+      return createHeroSection()
+    case "about":
+      return createAboutSection()
+    case "benefits":
+      return createBenefitsSection()
+    case "open_roles":
+      return createOpenRolesSection()
+    case "cta":
+      return createCtaSection()
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -71,6 +152,19 @@ function normalizeTheme(value: unknown): PageTheme {
   }
 }
 
+function normalizeBenefitItem(value: unknown): BenefitItem | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  return {
+    id: typeof value.id === "string" && value.id ? value.id : createId(),
+    title: typeof value.title === "string" ? value.title : "Benefit",
+    description:
+      typeof value.description === "string" ? value.description : "",
+  }
+}
+
 function normalizeSection(value: unknown): PageSection | null {
   if (!isRecord(value) || typeof value.type !== "string") {
     return null
@@ -86,7 +180,7 @@ function normalizeSection(value: unknown): PageSection | null {
       subtitle:
         typeof value.subtitle === "string"
           ? value.subtitle
-          : "Build meaningful products with people who care.",
+          : "Help us build the future. Explore opportunities to grow your career.",
       ctaLabel:
         typeof value.ctaLabel === "string" ? value.ctaLabel : "View open roles",
     }
@@ -100,14 +194,89 @@ function normalizeSection(value: unknown): PageSection | null {
       body:
         typeof value.body === "string"
           ? value.body
-          : "Tell candidates who you are and why your mission matters.",
+          : "Customize this section to tell candidates about your mission, culture, and values.",
+    }
+  }
+
+  if (value.type === "benefits") {
+    const items = Array.isArray(value.items)
+      ? value.items
+          .map((item) => normalizeBenefitItem(item))
+          .filter((item): item is BenefitItem => item !== null)
+      : []
+
+    return {
+      id,
+      type: "benefits",
+      title:
+        typeof value.title === "string" ? value.title : "Benefits & perks",
+      items:
+        items.length > 0
+          ? items
+          : [
+              createBenefitItem({
+                title: "Flexible Work",
+                description: "Work in a way that fits your life.",
+              }),
+            ],
+    }
+  }
+
+  if (value.type === "open_roles") {
+    return {
+      id,
+      type: "open_roles",
+      title: typeof value.title === "string" ? value.title : "Open roles",
+      subtitle:
+        typeof value.subtitle === "string"
+          ? value.subtitle
+          : "Find a role that matches your skills and ambitions.",
+    }
+  }
+
+  if (value.type === "cta") {
+    return {
+      id,
+      type: "cta",
+      title:
+        typeof value.title === "string"
+          ? value.title
+          : "Ready to make an impact?",
+      subtitle:
+        typeof value.subtitle === "string"
+          ? value.subtitle
+          : "Browse our open positions.",
+      buttonLabel:
+        typeof value.buttonLabel === "string"
+          ? value.buttonLabel
+          : "See open roles",
     }
   }
 
   return null
 }
 
-/** Normalize arbitrary JSONB draft into the MVP PageConfig shape. */
+function normalizeTemplate(value: unknown, raw: Record<string, unknown>): PageTemplateMeta | undefined {
+  if (isRecord(value)) {
+    const id = typeof value.id === "string" && value.id ? value.id : null
+    const version =
+      typeof value.version === "number" && Number.isFinite(value.version)
+        ? Math.max(1, Math.trunc(value.version))
+        : 1
+    if (id) {
+      return { id, version }
+    }
+  }
+
+  // Backward compatibility for early drafts that stored templateId only.
+  if (typeof raw.templateId === "string" && raw.templateId) {
+    return { id: raw.templateId, version: 1 }
+  }
+
+  return undefined
+}
+
+/** Normalize arbitrary JSONB draft into the PageConfig shape. */
 export function normalizePageConfig(raw: unknown): PageConfig {
   if (!isRecord(raw)) {
     return structuredClone(EMPTY_PAGE_CONFIG)
@@ -119,8 +288,11 @@ export function normalizePageConfig(raw: unknown): PageConfig {
         .filter((section): section is PageSection => section !== null)
     : []
 
+  const template = normalizeTemplate(raw.template, raw)
+
   return {
     theme: normalizeTheme(raw.theme),
+    ...(template ? { template } : {}),
     sections,
   }
 }
@@ -131,22 +303,73 @@ export function serializePageConfig(config: PageConfig): PageConfig {
       primaryColor: config.theme.primaryColor,
       secondaryColor: config.theme.secondaryColor,
     },
-    sections: config.sections.map((section) => {
-      if (section.type === "hero") {
-        return {
-          id: section.id,
-          type: "hero" as const,
-          title: section.title,
-          subtitle: section.subtitle,
-          ctaLabel: section.ctaLabel,
+    ...(config.template
+      ? {
+          template: {
+            id: config.template.id,
+            version: config.template.version,
+          },
         }
-      }
-      return {
-        id: section.id,
-        type: "about" as const,
-        title: section.title,
-        body: section.body,
+      : {}),
+    sections: config.sections.map((section) => {
+      switch (section.type) {
+        case "hero":
+          return {
+            id: section.id,
+            type: "hero" as const,
+            title: section.title,
+            subtitle: section.subtitle,
+            ctaLabel: section.ctaLabel,
+          }
+        case "about":
+          return {
+            id: section.id,
+            type: "about" as const,
+            title: section.title,
+            body: section.body,
+          }
+        case "benefits":
+          return {
+            id: section.id,
+            type: "benefits" as const,
+            title: section.title,
+            items: section.items.map((item) => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+            })),
+          }
+        case "open_roles":
+          return {
+            id: section.id,
+            type: "open_roles" as const,
+            title: section.title,
+            subtitle: section.subtitle,
+          }
+        case "cta":
+          return {
+            id: section.id,
+            type: "cta" as const,
+            title: section.title,
+            subtitle: section.subtitle,
+            buttonLabel: section.buttonLabel,
+          }
       }
     }),
+  }
+}
+
+export function sectionLabel(type: SectionType): string {
+  switch (type) {
+    case "hero":
+      return "Hero"
+    case "about":
+      return "About"
+    case "benefits":
+      return "Benefits"
+    case "open_roles":
+      return "Open Roles"
+    case "cta":
+      return "CTA"
   }
 }

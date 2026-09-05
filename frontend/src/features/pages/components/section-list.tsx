@@ -8,8 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { sectionLabel } from "@/features/pages/lib/page-config"
 import type { PageSection, SectionType } from "@/features/pages/types"
 import { cn } from "@/lib/utils"
+
+const ADDABLE_SECTIONS: SectionType[] = [
+  "hero",
+  "about",
+  "benefits",
+  "open_roles",
+  "cta",
+]
 
 type SectionListProps = {
   sections: PageSection[]
@@ -35,41 +44,37 @@ export function SectionList({
       <CardHeader>
         <CardTitle>Sections</CardTitle>
         <CardDescription>
-          MVP supports Hero and About. Reorder with up/down controls.
+          Build your careers page from reusable blocks. Reorder with up/down
+          controls.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={disabled}
-            onClick={() => onAdd("hero")}
-          >
-            <Plus className="size-4" />
-            Add Hero
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={disabled}
-            onClick={() => onAdd("about")}
-          >
-            <Plus className="size-4" />
-            Add About
-          </Button>
+          {ADDABLE_SECTIONS.map((type) => (
+            <Button
+              key={type}
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              onClick={() => onAdd(type)}
+            >
+              <Plus className="size-4" />
+              Add {sectionLabel(type)}
+            </Button>
+          ))}
         </div>
 
         {sections.length === 0 ? (
           <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-            No sections yet. Add a Hero or About block to start building.
+            No sections yet. Add a block to start building.
           </p>
         ) : (
           <ul className="space-y-2">
             {sections.map((section, index) => {
               const selected = section.id === selectedSectionId
+              const title = section.title || "Untitled"
+
               return (
                 <li key={section.id}>
                   <div
@@ -84,9 +89,9 @@ export function SectionList({
                       onClick={() => onSelect(section.id)}
                       disabled={disabled}
                     >
-                      <span className="capitalize">{section.type}</span>
+                      <span>{sectionLabel(section.type)}</span>
                       <span className="ml-2 font-normal text-muted-foreground">
-                        {section.title || "Untitled"}
+                        {title || "Untitled"}
                       </span>
                     </button>
                     <Button

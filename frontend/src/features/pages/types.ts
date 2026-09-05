@@ -3,6 +3,11 @@ export type PageTheme = {
   secondaryColor: string
 }
 
+export type PageTemplateMeta = {
+  id: string
+  version: number
+}
+
 export type HeroSection = {
   id: string
   type: "hero"
@@ -18,11 +23,46 @@ export type AboutSection = {
   body: string
 }
 
-export type PageSection = HeroSection | AboutSection
+export type BenefitItem = {
+  id: string
+  title: string
+  description: string
+}
+
+export type BenefitsSection = {
+  id: string
+  type: "benefits"
+  title: string
+  items: BenefitItem[]
+}
+
+export type OpenRolesSection = {
+  id: string
+  type: "open_roles"
+  title: string
+  subtitle: string
+}
+
+export type CtaSection = {
+  id: string
+  type: "cta"
+  title: string
+  subtitle: string
+  buttonLabel: string
+}
+
+export type PageSection =
+  | HeroSection
+  | AboutSection
+  | BenefitsSection
+  | OpenRolesSection
+  | CtaSection
+
 export type SectionType = PageSection["type"]
 
 export type PageConfig = {
   theme: PageTheme
+  template?: PageTemplateMeta
   sections: PageSection[]
 }
 

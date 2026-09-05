@@ -8,10 +8,10 @@ from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.security import decode_access_token
 from app.dependencies.database import DbSession
 from app.models.user import User
-from app.repositories.careers_page_repository import CareersPageRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
+from app.services.careers_page_service import CareersPageService
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -25,7 +25,7 @@ def get_auth_service(db: DbSession) -> AuthService:
         db=db,
         user_repository=UserRepository(db),
         company_repository=CompanyRepository(db),
-        careers_page_repository=CareersPageRepository(db),
+        careers_page_service=CareersPageService(db),
     )
 
 

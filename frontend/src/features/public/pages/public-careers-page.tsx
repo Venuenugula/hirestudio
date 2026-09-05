@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom"
 import { ApiError } from "@/api/client"
 import { normalizePageConfig } from "@/features/pages/lib/page-config"
 import type { PageSection } from "@/features/pages/types"
+import type { Job } from "@/features/jobs/types"
 import { PublicAbout } from "@/features/public/components/public-about"
+import { PublicBenefits } from "@/features/public/components/public-benefits"
+import { PublicCta } from "@/features/public/components/public-cta"
 import { PublicErrorPage } from "@/features/public/components/public-error-page"
 import { PublicFooter } from "@/features/public/components/public-footer"
 import { PublicHero } from "@/features/public/components/public-hero"
@@ -74,6 +77,9 @@ function PublicCareersContent({
   const heroSection = pageConfig.sections.find(
     (section) => section.type === "hero",
   )
+  const hasOpenRolesSection = pageConfig.sections.some(
+    (section) => section.type === "open_roles",
+  )
 
   useDocumentMeta({
     title: `Careers at ${company.name}`,
@@ -99,10 +105,14 @@ function PublicCareersContent({
           key={section.id}
           section={section}
           companyName={company.name}
-          onHeroCta={scrollToJobs}
+          jobs={jobs}
+          slug={slug}
+          onScrollToJobs={scrollToJobs}
         />
       ))}
-      <PublicJobList jobs={jobs} slug={slug} />
+      {!hasOpenRolesSection ? (
+        <PublicJobList jobs={jobs} slug={slug} />
+      ) : null}
       <PublicFooter companyName={company.name} />
     </PublicShell>
   )
@@ -111,21 +121,43 @@ function PublicCareersContent({
 function PublicSection({
   section,
   companyName,
-  onHeroCta,
+  jobs,
+  slug,
+  onScrollToJobs,
 }: {
   section: PageSection
   companyName: string
-  onHeroCta: () => void
+  jobs: Job[]
+  slug: string
+  onScrollToJobs: () => void
 }) {
   if (section.type === "hero") {
     return (
       <PublicHero
         section={section}
         companyName={companyName}
-        onCtaClick={onHeroCta}
+        onCtaClick={onScrollToJobs}
       />
     )
   }
 
-  return <PublicAbout section={section} />
+  if (section.type === "about") {
+    return <PublicAbout section={section} />
+  }
+
+  if (section.type === "benefits") {
+    return <PublicBenefits section={section} />
+  }
+
+  if (section.type === "open_roles") {
+    return (
+      <PublicJobList
+        jobs={jobs}
+        slug={slug}
+        section={{ title: section.title, subtitle: section.subtitle }}
+      />
+    )
+  }
+
+  return <PublicCta section={section} onButtonClick={onScrollToJobs} />
 }

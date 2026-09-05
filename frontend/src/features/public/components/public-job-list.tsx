@@ -1,12 +1,17 @@
+import type { OpenRolesSection } from "@/features/pages/types"
 import type { Job } from "@/features/jobs/types"
 import { PublicJobCard } from "@/features/public/components/public-job-card"
 
 type PublicJobListProps = {
   jobs: Job[]
   slug: string
+  section?: Pick<OpenRolesSection, "title" | "subtitle">
 }
 
-export function PublicJobList({ jobs, slug }: PublicJobListProps) {
+export function PublicJobList({ jobs, slug, section }: PublicJobListProps) {
+  const title = section?.title || "Open roles"
+  const subtitle = section?.subtitle
+
   return (
     <section
       id="open-roles"
@@ -15,8 +20,9 @@ export function PublicJobList({ jobs, slug }: PublicJobListProps) {
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Open roles
+            {title}
           </h2>
+          {subtitle ? <p className="text-sm opacity-75">{subtitle}</p> : null}
           <p className="text-sm opacity-75">
             {jobs.length === 0
               ? "No open positions right now. Check back soon."

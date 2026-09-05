@@ -1,5 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
@@ -19,21 +20,36 @@ class CareersPageRepository:
         statement = select(CareersPage).where(CareersPage.company_id == company_id)
         return self._db.scalars(statement).first()
 
-    def create_if_missing(self, company_id: UUID) -> CareersPage:
-        existing = self.get_by_company_id(company_id)
-        if existing is not None:
-            return existing
-
+    def create(
+        self,
+        company_id: UUID,
+        *,
+        draft_config: dict[str, Any] | None = None,
+        published_config: dict[str, Any] | None = None,
+    ) -> CareersPage:
         page = CareersPage(
             company_id=company_id,
-            draft_config={},
-            published_config={},
+            draft_config=deepcopy(draft_config) if draft_config is not None else {},
+            published_config=(
+                deepcopy(published_config) if published_config is not None else {}
+            ),
             published_at=None,
         )
         self._db.add(page)
         self._db.flush()
         self._db.refresh(page)
         return page
+
+    def create_if_missing(
+        self,
+        company_id: UUID,
+        *,
+        draft_config: dict[str, Any] | None = None,
+    ) -> CareersPage:
+        existing = self.get_by_company_id(company_id)
+        if existing is not None:
+            return existing
+        return self.create(company_id, draft_config=draft_config)
 
     def update_draft(
         self,

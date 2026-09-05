@@ -10,7 +10,7 @@ Usage (from backend/ with venv active):
 
     python -m app.scripts.seed_demo
 
-Default login: demo@demo-careers.test / demo-password-123
+Default login: demo@demo-careers.com / demo-password-123
 """
 
 from __future__ import annotations
@@ -18,13 +18,13 @@ from __future__ import annotations
 import argparse
 from datetime import UTC, datetime
 from pathlib import Path
-from uuid import uuid4
 
 from app.core.security import hash_password
 from app.db.session import SessionLocal
 from app.models.company import Company
 from app.models.job import Job
 from app.models.user import User
+from app.page_templates import PageTemplateContext, render_page_config
 from app.repositories.careers_page_repository import CareersPageRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.job_repository import JobRepository
@@ -34,33 +34,11 @@ from app.utils.slug import normalize_slug
 
 DEMO_SLUG = "demo-careers"
 DEMO_NAME = "Demo Careers Co"
-DEMO_EMAIL = "demo@demo-careers.test"
+DEMO_EMAIL = "demo@demo-careers.com"
 DEMO_PASSWORD = "demo-password-123"
 DEMO_FULL_NAME = "Demo Recruiter"
-
-
-def _demo_page_config() -> dict:
-    return {
-        "theme": {"primaryColor": "#0F172A", "secondaryColor": "#F8FAFC"},
-        "sections": [
-            {
-                "id": str(uuid4()),
-                "type": "hero",
-                "title": "Build what comes next",
-                "subtitle": "Explore open roles across product, engineering, and go-to-market.",
-                "ctaLabel": "View open roles",
-            },
-            {
-                "id": str(uuid4()),
-                "type": "about",
-                "title": "About Demo Careers Co",
-                "body": (
-                    "We are a sample company used to showcase the careers page builder. "
-                    "Roles in this demo are imported from the assignment dataset."
-                ),
-            },
-        ],
-    }
+DEMO_PRIMARY = "#0F172A"
+DEMO_SECONDARY = "#F8FAFC"
 
 
 def seed_demo(
@@ -84,13 +62,16 @@ def seed_demo(
                 Company(
                     name=DEMO_NAME,
                     slug=normalized,
-                    primary_color="#0F172A",
-                    secondary_color="#F8FAFC",
+                    primary_color=DEMO_PRIMARY,
+                    secondary_color=DEMO_SECONDARY,
                     is_active=True,
                 )
             )
             company_created = True
         else:
+            company.name = DEMO_NAME
+            company.primary_color = DEMO_PRIMARY
+            company.secondary_color = DEMO_SECONDARY
             company.is_active = True
             company = company_repo.update_company(company)
             company_created = False
@@ -123,7 +104,7 @@ def seed_demo(
             user_created = False
 
         page = page_repo.create_if_missing(company.id)
-        config = _demo_page_config()
+        config = render_page_config(PageTemplateContext.from_company(company))
         page_repo.update_draft(page, config)
         page_repo.publish(page, datetime.now(UTC))
 

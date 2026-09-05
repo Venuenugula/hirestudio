@@ -9,7 +9,11 @@ def test_get_careers_page_auto_creates(client, unique_slug: str) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["company_id"] == session["company"]["id"]
-    assert body["draft_config"] == {}
+    draft = body["draft_config"]
+    assert draft["template"]["id"] == "professional-starter"
+    assert draft["template"]["version"] == 1
+    types = [section["type"] for section in draft["sections"]]
+    assert types == ["hero", "about", "benefits", "open_roles", "cta"]
     assert body["published_at"] is None
 
 

@@ -24,13 +24,50 @@ export const aboutSectionSchema = z.object({
   body: z.string(),
 })
 
+export const benefitItemSchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+  description: z.string(),
+})
+
+export const benefitsSectionSchema = z.object({
+  id: z.string().min(1),
+  type: z.literal("benefits"),
+  title: z.string(),
+  items: z.array(benefitItemSchema),
+})
+
+export const openRolesSectionSchema = z.object({
+  id: z.string().min(1),
+  type: z.literal("open_roles"),
+  title: z.string(),
+  subtitle: z.string(),
+})
+
+export const ctaSectionSchema = z.object({
+  id: z.string().min(1),
+  type: z.literal("cta"),
+  title: z.string(),
+  subtitle: z.string(),
+  buttonLabel: z.string(),
+})
+
 export const pageSectionSchema = z.discriminatedUnion("type", [
   heroSectionSchema,
   aboutSectionSchema,
+  benefitsSectionSchema,
+  openRolesSectionSchema,
+  ctaSectionSchema,
 ])
 
 export const pageConfigSchema = z.object({
   theme: pageThemeSchema,
+  template: z
+    .object({
+      id: z.string().min(1),
+      version: z.number().int().positive(),
+    })
+    .optional(),
   sections: z.array(pageSectionSchema),
 })
 

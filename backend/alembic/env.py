@@ -13,8 +13,8 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.db.base import Base
 
-# Import model modules here as they are added so metadata is registered:
-# import app.models  # noqa: F401
+# Register all ORM models on Base.metadata for autogenerate.
+import app.models  # noqa: E402, F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)

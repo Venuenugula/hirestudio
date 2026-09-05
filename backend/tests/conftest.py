@@ -65,3 +65,14 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
 @pytest.fixture
 def unique_slug() -> str:
     return f"acme-{uuid4().hex[:8]}"
+
+
+@pytest.fixture
+def company(db_session: Session, unique_slug: str):
+    from app.models.company import Company
+
+    entity = Company(name="Acme Corp", slug=unique_slug)
+    db_session.add(entity)
+    db_session.flush()
+    db_session.refresh(entity)
+    return entity

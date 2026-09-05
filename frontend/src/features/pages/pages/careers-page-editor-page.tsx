@@ -1,32 +1,32 @@
-import { useCallback, useState } from "react"
-import { Link } from "react-router-dom"
+import { useCallback, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import { ErrorState } from "@/components/shared/error-state"
 import { PageContainer } from "@/components/shared/page-container"
-import { PageHeader } from "@/components/shared/page-header"
-import { Button } from "@/components/ui/button"
-import { AutosaveIndicator } from "@/features/pages/components/autosave-indicator"
 import { CareersPageEditorSkeleton } from "@/features/pages/components/careers-page-editor-skeleton"
+import { DesignStudio } from "@/features/pages/components/design-studio"
+import { EditorAccordion } from "@/features/pages/components/editor-accordion"
+import { EditorToolbar } from "@/features/pages/components/editor-toolbar"
 import { EmptyPage } from "@/features/pages/components/empty-page"
 import { LivePreview } from "@/features/pages/components/live-preview"
-import { PublishBar } from "@/features/pages/components/publish-bar"
 import { SectionBlockEditor } from "@/features/pages/components/section-block-editor"
 import { SectionNavigator } from "@/features/pages/components/section-navigator"
-import { DesignStudio } from "@/features/pages/components/design-studio"
 import { useCareersPageEditor } from "@/features/pages/hooks/use-careers-page-editor"
 import { useEditorShortcuts } from "@/features/pages/hooks/use-editor-shortcuts"
 import { useUnsavedChangesGuard } from "@/features/pages/hooks/use-unsaved-changes-guard"
 import { getErrorMessage } from "@/lib/toast"
 import { useAuth } from "@/providers/auth-provider"
 import { useWorkspace } from "@/providers/workspace-provider"
-import { routes } from "@/routes/paths"
+import { cn } from "@/lib/utils"
 
 export function CareersPageEditorPage() {
   const { company } = useAuth()
   const { companyId, hasCompany } = useWorkspace()
   const editor = useCareersPageEditor(companyId)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [previewVisible, setPreviewVisible] = useState(true)
+  const [designOpen, setDesignOpen] = useState(true)
+  const [sectionsNavOpen, setSectionsNavOpen] = useState(false)
 
   const hasUnsavedChanges =
     editor.autosaveStatus === "dirty" ||
@@ -52,7 +52,6 @@ export function CareersPageEditorPage() {
 
   useEditorShortcuts({
     enabled: Boolean(editor.draft) && !editor.isPublishing,
-    // While a save is in flight, prefer an explicit save over starting publish.
     preferSaveOverPublish: editor.isSaving,
     expandedSection: editor.expandedSection,
     onSave: saveNow,
@@ -63,36 +62,23 @@ export function CareersPageEditorPage() {
 
   if (!hasCompany || !companyId) {
     return (
-      <PageContainer>
-        <PageHeader
-          title="Careers Page"
-          description="Edit draft sections and publish the public careers experience."
-        />
+      <EditorShell>
         <EmptyPage />
-      </PageContainer>
+      </EditorShell>
     )
   }
 
   if (editor.pageQuery.isLoading || !editor.draft) {
     return (
-      <PageContainer>
-        <PageHeader
-          badge={<EditorStatusBadge published={false} />}
-          title="Careers Page"
-          description="Edit draft sections and publish the public careers experience."
-        />
+      <EditorShell>
         <CareersPageEditorSkeleton />
-      </PageContainer>
+      </EditorShell>
     )
   }
 
   if (editor.pageQuery.isError) {
     return (
-      <PageContainer>
-        <PageHeader
-          title="Careers Page"
-          description="Edit draft sections and publish the public careers experience."
-        />
+      <EditorShell>
         <ErrorState
           message={getErrorMessage(
             editor.pageQuery.error,
@@ -100,101 +86,117 @@ export function CareersPageEditorPage() {
           )}
           onRetry={() => void editor.pageQuery.refetch()}
         />
-      </PageContainer>
+      </EditorShell>
     )
   }
 
   const busy = editor.isPublishing
-  const isPublished = Boolean(editor.publishedAt)
 
   const selectSection = (sectionId: string) => {
     editor.scrollAndFocusSection(sectionId)
   }
 
   return (
-    <PageContainer className="max-w-7xl overflow-x-hidden">
-      <PageHeader
-        badge={<EditorStatusBadge published={isPublished} />}
-        title={
-          <>
-            Careers Page
-            {company?.name ? (
-              <>
-                {" "}
-                <span className="text-primary">{company.name}</span>
-              </>
-            ) : null}
-          </>
-        }
-        description="Build your careers page with collapsible, reorderable blocks."
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to={routes.company}>Company settings</Link>
-          </Button>
-        }
+    <EditorShell>
+      <EditorToolbar
+        companyName={company?.name}
+        slug={company?.slug}
+        autosaveStatus={editor.autosaveStatus}
+        isDirty={hasUnsavedChanges}
+        isSaving={editor.isSaving}
+        isPublishing={editor.isPublishing}
+        previewVisible={previewVisible}
+        onTogglePreview={() => setPreviewVisible((current) => !current)}
+        onSave={saveNow}
+        onPublish={publishNow}
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        <PublishBar
-          publishedAt={editor.publishedAt}
-          lastSavedAt={editor.lastSavedAt}
-          autosaveStatus={editor.autosaveStatus}
-          isDirty={hasUnsavedChanges}
-          isSaving={editor.isSaving}
-          isPublishing={editor.isPublishing}
-          onPublish={publishNow}
-          onSave={saveNow}
-        />
-      </motion.div>
+      <div className="space-y-3">
+        <EditorAccordion
+          title="Design tools"
+          description="Style · Theme · Typography · Colors"
+          open={designOpen}
+          onOpenChange={setDesignOpen}
+        >
+          <DesignStudio
+            compact
+            theme={editor.draft.theme}
+            disabled={busy}
+            onChange={editor.updateTheme}
+            onApplyStyle={editor.applyStylePreset}
+          />
+        </EditorAccordion>
 
-      <div className="grid grid-cols-1 gap-4 md:gap-6 xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,1fr)]">
-        <aside className="order-1 min-w-0 xl:sticky xl:top-20 xl:self-start">
+        <EditorAccordion
+          title="Page sections"
+          description="Jump to a block or drag to reorder"
+          open={sectionsNavOpen}
+          onOpenChange={setSectionsNavOpen}
+          meta={
+            <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
+              {editor.draft.sections.length}
+            </span>
+          }
+        >
           <SectionNavigator
             sections={editor.draft.sections}
             expandedSectionId={editor.expandedSectionId}
             disabled={busy}
             onSelect={selectSection}
             onReorder={editor.reorderSections}
+            embedded
           />
-        </aside>
+        </EditorAccordion>
+      </div>
 
-        <div className="order-3 min-w-0 space-y-5 md:order-2">
-          <DesignStudio
-            theme={editor.draft.theme}
-            disabled={busy}
-            onChange={editor.updateTheme}
-            onApplyStyle={editor.applyStylePreset}
-          />
-          <SectionBlockEditor
-            sections={editor.draft.sections}
-            expandedSectionId={editor.expandedSectionId}
-            focusSectionId={editor.focusSectionId}
-            disabled={busy}
-            onToggleExpand={editor.toggleSectionExpanded}
-            onToggleHidden={editor.toggleSectionHidden}
-            onDuplicate={editor.duplicateSection}
-            onDelete={editor.removeSection}
-            onMove={editor.moveSection}
-            onReorder={editor.reorderSections}
-            onChange={editor.updateSection}
-            onAdd={editor.addSection}
-            onClearFocus={editor.clearFocusSection}
-            pendingDeleteSectionId={pendingDeleteId}
-            onPendingDeleteChange={setPendingDeleteId}
-          />
-        </div>
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-4",
+          previewVisible && "xl:grid-cols-2",
+        )}
+      >
+        <motion.section
+          layout
+          className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+        >
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div>
+              <h2 className="text-sm font-semibold tracking-tight">Editor</h2>
+              <p className="text-xs text-muted-foreground">
+                Edit sections, copy, and layout blocks
+              </p>
+            </div>
+          </div>
+          <div className="max-h-[min(75vh,56rem)] space-y-4 overflow-y-auto p-4">
+            <SectionBlockEditor
+              sections={editor.draft.sections}
+              expandedSectionId={editor.expandedSectionId}
+              focusSectionId={editor.focusSectionId}
+              disabled={busy}
+              onToggleExpand={editor.toggleSectionExpanded}
+              onToggleHidden={editor.toggleSectionHidden}
+              onDuplicate={editor.duplicateSection}
+              onDelete={editor.removeSection}
+              onMove={editor.moveSection}
+              onReorder={editor.reorderSections}
+              onChange={editor.updateSection}
+              onAdd={editor.addSection}
+              onClearFocus={editor.clearFocusSection}
+              pendingDeleteSectionId={pendingDeleteId}
+              onPendingDeleteChange={setPendingDeleteId}
+            />
+          </div>
+        </motion.section>
 
-        <div className="order-2 min-w-0 md:order-3 xl:sticky xl:top-20 xl:self-start">
-          <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
+          {previewVisible ? (
             <motion.div
               key="preview"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22 }}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 12 }}
+              transition={{ duration: 0.2 }}
+              className="min-w-0 xl:sticky xl:top-20 xl:self-start"
             >
               <LivePreview
                 draft={editor.draft}
@@ -208,30 +210,28 @@ export function CareersPageEditorPage() {
                 slug={company?.slug ?? "preview"}
               />
             </motion.div>
-          </AnimatePresence>
-        </div>
+          ) : null}
+        </AnimatePresence>
       </div>
-
-      <AutosaveIndicator status={editor.autosaveStatus} />
-    </PageContainer>
+    </EditorShell>
   )
 }
 
-function EditorStatusBadge({ published }: { published: boolean }) {
+function EditorShell({ children }: { children: ReactNode }) {
   return (
-    <span
-      className={
-        published
-          ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-          : "inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-      }
+    <PageContainer
+      ambient={false}
+      className="max-w-[1600px] space-y-5 md:space-y-6"
     >
-      <span
-        className={
-          published ? "size-1.5 rounded-full bg-emerald-500" : "size-1.5 rounded-full bg-amber-500"
-        }
-      />
-      {published ? "Published" : "Draft"}
-    </span>
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+          Careers Page Editor
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Create and customize your public careers page.
+        </p>
+      </header>
+      {children}
+    </PageContainer>
   )
 }

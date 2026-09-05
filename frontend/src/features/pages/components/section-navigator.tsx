@@ -31,6 +31,8 @@ type SectionNavigatorProps = {
   disabled?: boolean
   onSelect: (sectionId: string) => void
   onReorder?: (activeId: string, overId: string) => void
+  /** Drop outer card chrome when nested inside EditorAccordion. */
+  embedded?: boolean
 }
 
 export function SectionNavigator({
@@ -39,6 +41,7 @@ export function SectionNavigator({
   disabled,
   onSelect,
   onReorder,
+  embedded = false,
 }: SectionNavigatorProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -66,6 +69,45 @@ export function SectionNavigator({
       return
     }
     onReorder(String(active.id), String(over.id))
+  }
+
+  const list = (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={sectionIds}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul
+          className={cn(
+            "flex flex-col gap-1.5",
+            embedded ? "sm:grid sm:grid-cols-2 lg:grid-cols-3" : undefined,
+          )}
+        >
+          {sections.map((section) => (
+            <SortableNavigatorItem
+              key={section.id}
+              section={section}
+              active={section.id === expandedSectionId}
+              disabled={disabled}
+              sortable={Boolean(onReorder)}
+              onSelect={onSelect}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  )
+
+  if (embedded) {
+    return (
+      <nav aria-label="Section navigator" className="min-w-0">
+        {list}
+      </nav>
+    )
   }
 
   return (
@@ -99,35 +141,8 @@ export function SectionNavigator({
         Sections
       </p>
 
-      <div
-        className={cn(
-          "px-2.5 pb-3",
-          !mobileOpen && "hidden md:block",
-        )}
-      >
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={sectionIds}
-            strategy={verticalListSortingStrategy}
-          >
-            <ul className="flex flex-col gap-1.5">
-              {sections.map((section) => (
-                <SortableNavigatorItem
-                  key={section.id}
-                  section={section}
-                  active={section.id === expandedSectionId}
-                  disabled={disabled}
-                  sortable={Boolean(onReorder)}
-                  onSelect={onSelect}
-                />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
+      <div className={cn("px-2.5 pb-3", !mobileOpen && "hidden md:block")}>
+        {list}
       </div>
     </nav>
   )

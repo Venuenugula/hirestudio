@@ -153,12 +153,21 @@ export function LivePreview({
         <div className="min-w-0">
           <h2 className="text-sm font-semibold tracking-tight">Live preview</h2>
           <p className="truncate text-xs text-muted-foreground">
-            Exact public renderer · draft data · hidden blocks excluded
+            Exact public renderer · draft · hidden blocks excluded
           </p>
         </div>
-        <p className="hidden shrink-0 text-xs text-muted-foreground sm:block">
-          {preset.width}px · {Math.round(scale * 100)}%
-        </p>
+        <div className="flex shrink-0 items-center gap-2">
+          <p className="hidden text-xs text-muted-foreground sm:block">
+            {preset.width}px · {Math.round(scale * 100)}%
+          </p>
+          <button
+            type="button"
+            className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+            onClick={() => setFullscreen((current) => !current)}
+          >
+            {fullscreen ? "Exit full screen" : "Full screen"}
+          </button>
+        </div>
       </div>
 
       <PreviewToolbar

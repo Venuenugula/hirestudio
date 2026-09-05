@@ -9,7 +9,7 @@ export function AppLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-muted/30">
       <div className="hidden md:block">
         <AppSidebar />
       </div>

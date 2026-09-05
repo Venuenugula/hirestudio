@@ -11,7 +11,7 @@ type AppHeaderProps = {
   onMenuClick?: () => void
 }
 
-export function AppHeader({ title = "Workspace", onMenuClick }: AppHeaderProps) {
+export function AppHeader({ title = "Editor", onMenuClick }: AppHeaderProps) {
   const { user, company, logout, isAuthenticated } = useAuth()
 
   const workspaceLabel = company?.name

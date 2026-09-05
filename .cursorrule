@@ -1,0 +1,22 @@
+Project Type:
+Full Stack Web Application
+
+Backend:
+FastAPI
+SQLAlchemy 2.0
+Repository Pattern
+Service Layer
+
+Frontend:
+React
+TypeScript
+TailwindCSS
+shadcn/ui
+
+Rules:
+- Never place business logic in routers.
+- Keep services framework-independent.
+- Write strongly typed code.
+- Build reusable components.
+- Prefer composition over duplication.
+- Follow the project architecture documented in ARCHITECTURE.md.

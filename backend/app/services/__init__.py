@@ -1,1 +1,5 @@
-"""Business logic layer (populated in later phases)."""
+"""Service layer."""
+
+from app.services.company_service import CompanyService
+
+__all__ = ["CompanyService"]

@@ -1,1 +1,5 @@
-"""Database access layer (populated in later phases)."""
+"""Repository layer."""
+
+from app.repositories.company_repository import CompanyRepository
+
+__all__ = ["CompanyRepository"]

@@ -1,5 +1,10 @@
 import { z } from "zod"
 
+const sectionBaseSchema = {
+  id: z.string().min(1),
+  hidden: z.boolean().optional(),
+}
+
 export const pageThemeSchema = z.object({
   primaryColor: z
     .string()
@@ -10,7 +15,7 @@ export const pageThemeSchema = z.object({
 })
 
 export const heroSectionSchema = z.object({
-  id: z.string().min(1),
+  ...sectionBaseSchema,
   type: z.literal("hero"),
   title: z.string(),
   subtitle: z.string(),
@@ -18,7 +23,7 @@ export const heroSectionSchema = z.object({
 })
 
 export const aboutSectionSchema = z.object({
-  id: z.string().min(1),
+  ...sectionBaseSchema,
   type: z.literal("about"),
   title: z.string(),
   body: z.string(),
@@ -31,21 +36,21 @@ export const benefitItemSchema = z.object({
 })
 
 export const benefitsSectionSchema = z.object({
-  id: z.string().min(1),
+  ...sectionBaseSchema,
   type: z.literal("benefits"),
   title: z.string(),
   items: z.array(benefitItemSchema),
 })
 
 export const openRolesSectionSchema = z.object({
-  id: z.string().min(1),
+  ...sectionBaseSchema,
   type: z.literal("open_roles"),
   title: z.string(),
   subtitle: z.string(),
 })
 
 export const ctaSectionSchema = z.object({
-  id: z.string().min(1),
+  ...sectionBaseSchema,
   type: z.literal("cta"),
   title: z.string(),
   subtitle: z.string(),

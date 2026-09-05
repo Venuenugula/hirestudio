@@ -8,8 +8,8 @@ import { CareersPageEditorSkeleton } from "@/features/pages/components/careers-p
 import { EmptyPage } from "@/features/pages/components/empty-page"
 import { LivePreview } from "@/features/pages/components/live-preview"
 import { PublishBar } from "@/features/pages/components/publish-bar"
-import { SectionEditor } from "@/features/pages/components/section-editor"
-import { SectionList } from "@/features/pages/components/section-list"
+import { SectionBlockEditor } from "@/features/pages/components/section-block-editor"
+import { SectionNavigator } from "@/features/pages/components/section-navigator"
 import { ThemeEditor } from "@/features/pages/components/theme-editor"
 import { useCareersPageEditor } from "@/features/pages/hooks/use-careers-page-editor"
 import { getErrorMessage } from "@/lib/toast"
@@ -64,11 +64,20 @@ export function CareersPageEditorPage() {
 
   const busy = editor.isPublishing
 
+  const selectSection = (sectionId: string) => {
+    editor.expandSection(sectionId)
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById(`section-block-${sectionId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+    })
+  }
+
   return (
     <PageContainer className="max-w-7xl">
       <PageHeader
         title="Careers Page"
-        description="Edit draft sections and publish the public careers experience."
+        description="Build your careers page with collapsible, reorderable blocks."
         actions={
           <Button asChild variant="outline" size="sm">
             <Link to={routes.company}>Company settings</Link>
@@ -86,30 +95,37 @@ export function CareersPageEditorPage() {
         }}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]">
+        <aside className="xl:sticky xl:top-20 xl:self-start">
+          <SectionNavigator
+            sections={editor.draft.sections}
+            expandedSectionId={editor.expandedSectionId}
+            disabled={busy}
+            onSelect={selectSection}
+          />
+        </aside>
+
         <div className="space-y-4">
           <ThemeEditor
             theme={editor.draft.theme}
             disabled={busy}
             onChange={editor.updateTheme}
           />
-          <SectionList
+          <SectionBlockEditor
             sections={editor.draft.sections}
-            selectedSectionId={editor.selectedSectionId}
+            expandedSectionId={editor.expandedSectionId}
             disabled={busy}
-            onSelect={editor.setSelectedSectionId}
-            onAdd={editor.addSection}
-            onRemove={editor.removeSection}
-            onMove={editor.moveSection}
-          />
-          <SectionEditor
-            section={editor.selectedSection}
-            disabled={busy}
+            onToggleExpand={editor.toggleSectionExpanded}
+            onToggleHidden={editor.toggleSectionHidden}
+            onDuplicate={editor.duplicateSection}
+            onDelete={editor.removeSection}
+            onReorder={editor.reorderSections}
             onChange={editor.updateSection}
+            onAdd={editor.addSection}
           />
         </div>
 
-        <div className="lg:sticky lg:top-20 lg:self-start">
+        <div className="xl:sticky xl:top-20 xl:self-start">
           <LivePreview draft={editor.draft} companyId={companyId} />
         </div>
       </div>

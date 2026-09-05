@@ -5,109 +5,95 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  createBenefitItem,
-  sectionLabel,
-} from "@/features/pages/lib/page-config"
+import { createBenefitItem } from "@/features/pages/lib/page-config"
 import type { BenefitItem, PageSection } from "@/features/pages/types"
 
-type SectionEditorProps = {
-  section: PageSection | null
+type SectionFieldsProps = {
+  section: PageSection
   disabled?: boolean
   onChange: (sectionId: string, patch: Partial<PageSection>) => void
 }
 
-export function SectionEditor({ section, disabled, onChange }: SectionEditorProps) {
-  if (!section) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Section editor</CardTitle>
-          <CardDescription>Select a section to edit its content.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No section selected.</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
+export function SectionFields({ section, disabled, onChange }: SectionFieldsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{sectionLabel(section.type)} section</CardTitle>
-        <CardDescription>Edits apply to the draft and live preview.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {"title" in section ? (
-          <Field label="Title" htmlFor={`${section.id}-title`}>
-            <Input
-              id={`${section.id}-title`}
-              value={section.title}
-              disabled={disabled}
-              onChange={(event) =>
-                onChange(section.id, { title: event.target.value })
-              }
-            />
-          </Field>
-        ) : null}
-
-        {section.type === "hero" ? (
-          <>
-            <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
-              <Input
-                id={`${section.id}-subtitle`}
-                value={section.subtitle}
-                disabled={disabled}
-                onChange={(event) =>
-                  onChange(section.id, { subtitle: event.target.value })
-                }
-              />
-            </Field>
-            <Field label="CTA label" htmlFor={`${section.id}-cta`}>
-              <Input
-                id={`${section.id}-cta`}
-                value={section.ctaLabel}
-                disabled={disabled}
-                onChange={(event) =>
-                  onChange(section.id, { ctaLabel: event.target.value })
-                }
-              />
-            </Field>
-          </>
-        ) : null}
-
-        {section.type === "about" ? (
-          <Field label="Body" htmlFor={`${section.id}-body`}>
-            <Textarea
-              id={`${section.id}-body`}
-              value={section.body}
-              disabled={disabled}
-              rows={6}
-              onChange={(event) =>
-                onChange(section.id, { body: event.target.value })
-              }
-            />
-          </Field>
-        ) : null}
-
-        {section.type === "benefits" ? (
-          <BenefitsItemsEditor
-            sectionId={section.id}
-            items={section.items}
+    <div className="space-y-4 border-t border-border px-4 py-4">
+      {"title" in section ? (
+        <Field label="Title" htmlFor={`${section.id}-title`}>
+          <Input
+            id={`${section.id}-title`}
+            value={section.title}
             disabled={disabled}
-            onChange={(items) => onChange(section.id, { items })}
+            onChange={(event) =>
+              onChange(section.id, { title: event.target.value })
+            }
           />
-        ) : null}
+        </Field>
+      ) : null}
 
-        {section.type === "open_roles" ? (
+      {section.type === "hero" ? (
+        <>
+          <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
+            <Input
+              id={`${section.id}-subtitle`}
+              value={section.subtitle}
+              disabled={disabled}
+              onChange={(event) =>
+                onChange(section.id, { subtitle: event.target.value })
+              }
+            />
+          </Field>
+          <Field label="CTA label" htmlFor={`${section.id}-cta`}>
+            <Input
+              id={`${section.id}-cta`}
+              value={section.ctaLabel}
+              disabled={disabled}
+              onChange={(event) =>
+                onChange(section.id, { ctaLabel: event.target.value })
+              }
+            />
+          </Field>
+        </>
+      ) : null}
+
+      {section.type === "about" ? (
+        <Field label="Body" htmlFor={`${section.id}-body`}>
+          <Textarea
+            id={`${section.id}-body`}
+            value={section.body}
+            disabled={disabled}
+            rows={6}
+            onChange={(event) =>
+              onChange(section.id, { body: event.target.value })
+            }
+          />
+        </Field>
+      ) : null}
+
+      {section.type === "benefits" ? (
+        <BenefitsItemsEditor
+          sectionId={section.id}
+          items={section.items}
+          disabled={disabled}
+          onChange={(items) => onChange(section.id, { items })}
+        />
+      ) : null}
+
+      {section.type === "open_roles" ? (
+        <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
+          <Textarea
+            id={`${section.id}-subtitle`}
+            value={section.subtitle}
+            disabled={disabled}
+            rows={3}
+            onChange={(event) =>
+              onChange(section.id, { subtitle: event.target.value })
+            }
+          />
+        </Field>
+      ) : null}
+
+      {section.type === "cta" ? (
+        <>
           <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
             <Textarea
               id={`${section.id}-subtitle`}
@@ -119,35 +105,19 @@ export function SectionEditor({ section, disabled, onChange }: SectionEditorProp
               }
             />
           </Field>
-        ) : null}
-
-        {section.type === "cta" ? (
-          <>
-            <Field label="Subtitle" htmlFor={`${section.id}-subtitle`}>
-              <Textarea
-                id={`${section.id}-subtitle`}
-                value={section.subtitle}
-                disabled={disabled}
-                rows={3}
-                onChange={(event) =>
-                  onChange(section.id, { subtitle: event.target.value })
-                }
-              />
-            </Field>
-            <Field label="Button label" htmlFor={`${section.id}-button`}>
-              <Input
-                id={`${section.id}-button`}
-                value={section.buttonLabel}
-                disabled={disabled}
-                onChange={(event) =>
-                  onChange(section.id, { buttonLabel: event.target.value })
-                }
-              />
-            </Field>
-          </>
-        ) : null}
-      </CardContent>
-    </Card>
+          <Field label="Button label" htmlFor={`${section.id}-button`}>
+            <Input
+              id={`${section.id}-button`}
+              value={section.buttonLabel}
+              disabled={disabled}
+              onChange={(event) =>
+                onChange(section.id, { buttonLabel: event.target.value })
+              }
+            />
+          </Field>
+        </>
+      ) : null}
+    </div>
   )
 }
 

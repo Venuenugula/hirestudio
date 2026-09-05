@@ -1,7 +1,10 @@
 import { useParams } from "react-router-dom"
 
 import { ApiError } from "@/api/client"
-import { normalizePageConfig } from "@/features/pages/lib/page-config"
+import {
+  isSectionVisible,
+  normalizePageConfig,
+} from "@/features/pages/lib/page-config"
 import type { PageSection } from "@/features/pages/types"
 import type { Job } from "@/features/jobs/types"
 import { PublicAbout } from "@/features/public/components/public-about"
@@ -70,13 +73,10 @@ function PublicCareersContent({
   const publishedConfig = careers_page?.published_config ?? {}
   const pageConfig = normalizePageConfig(publishedConfig)
   const theme = resolvePublicTheme(publishedConfig, company)
+  const visibleSections = pageConfig.sections.filter(isSectionVisible)
 
-  const aboutSection = pageConfig.sections.find(
-    (section) => section.type === "about",
-  )
-  const heroSection = pageConfig.sections.find(
-    (section) => section.type === "hero",
-  )
+  const aboutSection = visibleSections.find((section) => section.type === "about")
+  const heroSection = visibleSections.find((section) => section.type === "hero")
   const hasOpenRolesSection = pageConfig.sections.some(
     (section) => section.type === "open_roles",
   )
@@ -100,7 +100,7 @@ function PublicCareersContent({
 
   return (
     <PublicShell company={company} theme={theme}>
-      {pageConfig.sections.map((section) => (
+      {visibleSections.map((section) => (
         <PublicSection
           key={section.id}
           section={section}

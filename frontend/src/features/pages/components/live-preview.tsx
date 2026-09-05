@@ -19,6 +19,7 @@ import type {
   PageConfig,
   PageSection,
 } from "@/features/pages/types"
+import { isSectionVisible } from "@/features/pages/lib/page-config"
 
 type LivePreviewProps = {
   draft: PageConfig
@@ -29,6 +30,7 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
   const { theme, sections } = draft
   const jobsQuery = useJobsQuery(companyId, { is_active: true })
   const activeJobs = jobsQuery.data?.items ?? []
+  const visibleSections = sections.filter(isSectionVisible)
   const hasOpenRolesSection = sections.some(
     (section) => section.type === "open_roles",
   )
@@ -38,7 +40,8 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
       <CardHeader>
         <CardTitle>Live preview</CardTitle>
         <CardDescription>
-          Renders the current draft and active jobs in real time.
+          Renders the current draft and active jobs in real time. Hidden blocks
+          are excluded.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -53,13 +56,13 @@ export function LivePreview({ draft, companyId }: LivePreviewProps) {
             } as CSSProperties
           }
         >
-          {sections.length === 0 && activeJobs.length === 0 ? (
+          {visibleSections.length === 0 && activeJobs.length === 0 ? (
             <div className="flex min-h-[28rem] items-center justify-center px-6 text-center text-sm opacity-70">
               Add sections or active jobs to preview your careers page.
             </div>
           ) : (
             <>
-              {sections.map((section) => (
+              {visibleSections.map((section) => (
                 <PreviewSection
                   key={section.id}
                   section={section}

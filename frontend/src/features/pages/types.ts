@@ -8,16 +8,19 @@ export type PageTemplateMeta = {
   version: number
 }
 
-export type HeroSection = {
+type SectionBase = {
   id: string
+  hidden?: boolean
+}
+
+export type HeroSection = SectionBase & {
   type: "hero"
   title: string
   subtitle: string
   ctaLabel: string
 }
 
-export type AboutSection = {
-  id: string
+export type AboutSection = SectionBase & {
   type: "about"
   title: string
   body: string
@@ -29,22 +32,19 @@ export type BenefitItem = {
   description: string
 }
 
-export type BenefitsSection = {
-  id: string
+export type BenefitsSection = SectionBase & {
   type: "benefits"
   title: string
   items: BenefitItem[]
 }
 
-export type OpenRolesSection = {
-  id: string
+export type OpenRolesSection = SectionBase & {
   type: "open_roles"
   title: string
   subtitle: string
 }
 
-export type CtaSection = {
-  id: string
+export type CtaSection = SectionBase & {
   type: "cta"
   title: string
   subtitle: string

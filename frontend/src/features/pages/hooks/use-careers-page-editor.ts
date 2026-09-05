@@ -4,8 +4,11 @@ import { useCareersPageQuery } from "@/features/pages/hooks/use-careers-page-que
 import { usePublishCareersPageMutation } from "@/features/pages/hooks/use-publish-careers-page-mutation"
 import { useUpdateDraftMutation } from "@/features/pages/hooks/use-update-draft-mutation"
 import {
+  canDeleteSection,
   createSection,
+  duplicateSection,
   normalizePageConfig,
+  reorderSections,
   serializePageConfig,
 } from "@/features/pages/lib/page-config"
 import type {
@@ -32,7 +35,7 @@ export function useCareersPageEditor(companyId: string | null) {
 
   const [draft, setDraft] = useState<PageConfig | null>(null)
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle")
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null)
 
   const initializedForCompany = useRef<string | null>(null)
   const lastSavedSnapshot = useRef<string>("")
@@ -47,7 +50,7 @@ export function useCareersPageEditor(companyId: string | null) {
   useEffect(() => {
     initializedForCompany.current = null
     setDraft(null)
-    setSelectedSectionId(null)
+    setExpandedSectionId(null)
     setAutosaveStatus("idle")
     lastSavedSnapshot.current = ""
   }, [companyId])
@@ -64,7 +67,7 @@ export function useCareersPageEditor(companyId: string | null) {
     setDraft(normalized)
     lastSavedSnapshot.current = snapshot(normalized)
     initializedForCompany.current = companyId
-    setSelectedSectionId(normalized.sections[0]?.id ?? null)
+    setExpandedSectionId(normalized.sections[0]?.id ?? null)
     setAutosaveStatus("idle")
   }, [companyId, pageQuery.data])
 
@@ -108,6 +111,14 @@ export function useCareersPageEditor(companyId: string | null) {
     })
   }, [])
 
+  const expandSection = useCallback((sectionId: string) => {
+    setExpandedSectionId(sectionId)
+  }, [])
+
+  const toggleSectionExpanded = useCallback((sectionId: string) => {
+    setExpandedSectionId((current) => (current === sectionId ? null : sectionId))
+  }, [])
+
   const addSection = useCallback((type: SectionType) => {
     const section = createSection(type)
     setDraft((current) => {
@@ -119,10 +130,17 @@ export function useCareersPageEditor(companyId: string | null) {
         sections: [...current.sections, section],
       }
     })
-    setSelectedSectionId(section.id)
+    setExpandedSectionId(section.id)
   }, [])
 
   const removeSection = useCallback((sectionId: string) => {
+    const target = draftRef.current?.sections.find(
+      (section) => section.id === sectionId,
+    )
+    if (!target || !canDeleteSection(target)) {
+      return
+    }
+
     const remaining =
       draftRef.current?.sections.filter((section) => section.id !== sectionId) ??
       []
@@ -137,12 +155,20 @@ export function useCareersPageEditor(companyId: string | null) {
       }
     })
 
-    setSelectedSectionId((selected) =>
-      selected === sectionId ? (remaining[0]?.id ?? null) : selected,
+    setExpandedSectionId((expanded) =>
+      expanded === sectionId ? (remaining[0]?.id ?? null) : expanded,
     )
   }, [])
 
-  const moveSection = useCallback((sectionId: string, direction: "up" | "down") => {
+  const duplicateSectionById = useCallback((sectionId: string) => {
+    const source = draftRef.current?.sections.find(
+      (section) => section.id === sectionId,
+    )
+    if (!source) {
+      return
+    }
+
+    const copy = duplicateSection(source)
     setDraft((current) => {
       if (!current) {
         return current
@@ -151,14 +177,44 @@ export function useCareersPageEditor(companyId: string | null) {
       if (index < 0) {
         return current
       }
-      const target = direction === "up" ? index - 1 : index + 1
-      if (target < 0 || target >= current.sections.length) {
+      const sections = [...current.sections]
+      sections.splice(index + 1, 0, copy)
+      return { ...current, sections }
+    })
+    setExpandedSectionId(copy.id)
+  }, [])
+
+  const toggleSectionHidden = useCallback((sectionId: string) => {
+    setDraft((current) => {
+      if (!current) {
         return current
       }
-      const sections = [...current.sections]
-      const [item] = sections.splice(index, 1)
-      sections.splice(target, 0, item)
-      return { ...current, sections }
+      return {
+        ...current,
+        sections: current.sections.map((section) => {
+          if (section.id !== sectionId) {
+            return section
+          }
+          const nextHidden = !section.hidden
+          if (nextHidden) {
+            return { ...section, hidden: true }
+          }
+          const { hidden: _removed, ...rest } = section
+          return rest as PageSection
+        }),
+      }
+    })
+  }, [])
+
+  const reorderSectionList = useCallback((activeId: string, overId: string) => {
+    setDraft((current) => {
+      if (!current) {
+        return current
+      }
+      return {
+        ...current,
+        sections: reorderSections(current.sections, activeId, overId),
+      }
     })
   }, [])
 
@@ -202,12 +258,12 @@ export function useCareersPageEditor(companyId: string | null) {
     await publishMutation.mutateAsync()
   }, [companyId, draft, publishMutation, saveDraftAsync])
 
-  const selectedSection = useMemo(() => {
-    if (!draft || !selectedSectionId) {
+  const expandedSection = useMemo(() => {
+    if (!draft || !expandedSectionId) {
       return null
     }
-    return draft.sections.find((section) => section.id === selectedSectionId) ?? null
-  }, [draft, selectedSectionId])
+    return draft.sections.find((section) => section.id === expandedSectionId) ?? null
+  }, [draft, expandedSectionId])
 
   const isSaving =
     updateDraftMutation.isPending || autosaveStatus === "saving"
@@ -216,17 +272,20 @@ export function useCareersPageEditor(companyId: string | null) {
   return {
     pageQuery,
     draft,
-    selectedSectionId,
-    selectedSection,
+    expandedSectionId,
+    expandedSection,
     autosaveStatus,
     isSaving,
     isPublishing,
     publishedAt: pageQuery.data?.published_at ?? null,
-    setSelectedSectionId,
+    expandSection,
+    toggleSectionExpanded,
     updateTheme,
     addSection,
     removeSection,
-    moveSection,
+    duplicateSection: duplicateSectionById,
+    toggleSectionHidden,
+    reorderSections: reorderSectionList,
     updateSection,
     publish,
   }

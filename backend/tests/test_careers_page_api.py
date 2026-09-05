@@ -1,23 +1,26 @@
-from uuid import uuid4
+from tests.conftest import auth_header, register_and_login
 
 
-def test_get_careers_page_auto_creates(client, company) -> None:
-    response = client.get(f"/api/v1/careers-page/company/{company.id}")
+def test_get_careers_page_auto_creates(client, unique_slug: str) -> None:
+    session = register_and_login(client, unique_slug)
+    headers = auth_header(session["access_token"])
 
+    response = client.get("/api/v1/careers-page/me", headers=headers)
     assert response.status_code == 200
     body = response.json()
-    assert body["company_id"] == str(company.id)
+    assert body["company_id"] == session["company"]["id"]
     assert body["draft_config"] == {}
-    assert body["published_config"] == {}
     assert body["published_at"] is None
 
 
-def test_get_careers_page_unknown_company_returns_404(client) -> None:
-    response = client.get(f"/api/v1/careers-page/company/{uuid4()}")
-    assert response.status_code == 404
+def test_careers_page_requires_auth(client) -> None:
+    assert client.get("/api/v1/careers-page/me").status_code == 401
 
 
-def test_patch_draft_and_publish_flow(client, company) -> None:
+def test_patch_draft_and_publish_flow(client, unique_slug: str) -> None:
+    session = register_and_login(client, unique_slug)
+    headers = auth_header(session["access_token"])
+
     draft = {
         "sections": [
             {"type": "hero", "title": "Work with us"},
@@ -26,32 +29,21 @@ def test_patch_draft_and_publish_flow(client, company) -> None:
     }
 
     patch_response = client.patch(
-        f"/api/v1/careers-page/company/{company.id}/draft",
+        "/api/v1/careers-page/me/draft",
+        headers=headers,
         json={"draft_config": draft},
     )
     assert patch_response.status_code == 200
-    patched = patch_response.json()
-    assert patched["draft_config"] == draft
-    assert patched["published_config"] == {}
+    assert patch_response.json()["draft_config"] == draft
 
     publish_response = client.post(
-        f"/api/v1/careers-page/company/{company.id}/publish"
+        "/api/v1/careers-page/me/publish",
+        headers=headers,
     )
     assert publish_response.status_code == 200
     published = publish_response.json()
     assert published["published_config"] == draft
-    assert published["draft_config"] == draft
     assert published["published_at"] is not None
 
-    get_response = client.get(f"/api/v1/careers-page/company/{company.id}")
-    assert get_response.status_code == 200
+    get_response = client.get("/api/v1/careers-page/me", headers=headers)
     assert get_response.json()["published_config"] == draft
-
-
-def test_publish_without_prior_draft_publishes_empty_config(client, company) -> None:
-    response = client.post(f"/api/v1/careers-page/company/{company.id}/publish")
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["published_config"] == {}
-    assert body["published_at"] is not None

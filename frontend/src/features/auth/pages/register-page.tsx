@@ -7,20 +7,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  loginDefaults,
-  loginSchema,
-  type LoginFormValues,
+  registerDefaults,
+  registerSchema,
+  type RegisterFormValues,
 } from "@/features/auth/schemas/auth-schema"
 import { toastError, toastSuccess } from "@/lib/toast"
 import { useAuth } from "@/providers/auth-provider"
 import { routes } from "@/routes/paths"
 
-export function LoginPage() {
+export function RegisterPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: loginDefaults,
+  const { register: registerAccount } = useAuth()
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: registerDefaults,
   })
 
   const {
@@ -32,9 +32,9 @@ export function LoginPage() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Create account</h1>
         <p className="text-sm text-muted-foreground">
-          Access your company careers workspace.
+          Register your company and start building your careers page.
         </p>
       </div>
 
@@ -42,34 +42,46 @@ export function LoginPage() {
         className="space-y-4 rounded-xl border border-border bg-card p-6"
         onSubmit={handleSubmit(async (values) => {
           try {
-            await login(values)
-            toastSuccess("Welcome back")
+            await registerAccount({
+              ...values,
+              company_slug: values.company_slug.toLowerCase(),
+            })
+            toastSuccess("Workspace ready")
             navigate(routes.dashboard, { replace: true })
           } catch (error) {
-            toastError(error, "Unable to sign in")
+            toastError(error, "Unable to register")
           }
         })}
         noValidate
       >
-        <Field label="Email" error={errors.email?.message}>
+        <Field label="Full name" error={errors.full_name?.message}>
+          <Input autoComplete="name" {...register("full_name")} />
+        </Field>
+        <Field label="Work email" error={errors.email?.message}>
           <Input type="email" autoComplete="email" {...register("email")} />
         </Field>
         <Field label="Password" error={errors.password?.message}>
           <Input
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             {...register("password")}
           />
         </Field>
+        <Field label="Company name" error={errors.company_name?.message}>
+          <Input {...register("company_name")} />
+        </Field>
+        <Field label="Company slug" error={errors.company_slug?.message}>
+          <Input placeholder="acme-corp" {...register("company_slug")} />
+        </Field>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Signing in..." : "Sign in"}
+          {isSubmitting ? "Creating workspace..." : "Create workspace"}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        New here?{" "}
-        <Link className="font-medium text-foreground underline-offset-4 hover:underline" to={routes.register}>
-          Create an account
+        Already have an account?{" "}
+        <Link className="font-medium text-foreground underline-offset-4 hover:underline" to={routes.login}>
+          Sign in
         </Link>
       </p>
     </div>

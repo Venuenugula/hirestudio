@@ -5,23 +5,24 @@ import type {
   PublishResult,
 } from "@/features/pages/types"
 
-function basePath(companyId: string) {
-  return `/api/v1/careers-page/company/${companyId}`
+const BASE = "/api/v1/careers-page/me"
+
+export function getCareersPage(_companyId?: string) {
+  return apiClient<CareersPage>(BASE)
 }
 
-export function getCareersPage(companyId: string) {
-  return apiClient<CareersPage>(basePath(companyId))
-}
-
-export function updateCareersPageDraft(companyId: string, draftConfig: PageConfig) {
-  return apiClient<CareersPage>(`${basePath(companyId)}/draft`, {
+export function updateCareersPageDraft(
+  _companyId: string | undefined,
+  draftConfig: PageConfig,
+) {
+  return apiClient<CareersPage>(`${BASE}/draft`, {
     method: "PATCH",
     body: { draft_config: draftConfig },
   })
 }
 
-export function publishCareersPage(companyId: string) {
-  return apiClient<PublishResult>(`${basePath(companyId)}/publish`, {
+export function publishCareersPage(_companyId?: string) {
+  return apiClient<PublishResult>(`${BASE}/publish`, {
     method: "POST",
   })
 }

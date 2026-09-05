@@ -62,18 +62,18 @@ def test_update_and_delete_job(db_session, company) -> None:
         _create(title="Designer", department="Design", employment_type="contract"),
     )
 
-    updated = service.update_job(
+    updated = service.update_job_for_company(
         created.id,
+        company.id,
         JobUpdate(title="Product Designer", is_active=False, experience_level="mid_level"),
     )
     assert updated.title == "Product Designer"
     assert updated.is_active is False
     assert updated.experience_level == "mid_level"
 
-    service.delete_job(created.id)
+    service.delete_job_for_company(created.id, company.id)
     with pytest.raises(NotFoundError):
-        service.get_job(created.id)
-
+        service.get_job_for_company(created.id, company.id)
 
 def test_create_for_missing_company_raises(db_session) -> None:
     service = JobService(db_session)

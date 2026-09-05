@@ -20,3 +20,13 @@ class ConflictError(AppError):
 class DomainValidationError(AppError):
     def __init__(self, message: str) -> None:
         super().__init__(message, status_code=422)
+
+
+class UnauthorizedError(AppError):
+    def __init__(self, message: str = "Not authenticated") -> None:
+        super().__init__(message, status_code=401)
+
+
+class ForbiddenError(AppError):
+    def __init__(self, message: str = "Forbidden") -> None:
+        super().__init__(message, status_code=403)

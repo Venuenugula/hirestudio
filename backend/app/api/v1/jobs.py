@@ -3,16 +3,18 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Response, status
 
+from app.dependencies.auth import CurrentCompanyIdDep, CurrentUserDep
 from app.dependencies.jobs import JobServiceDep
 from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 
-@router.get("/company/{company_id}", response_model=JobListResponse)
-def list_jobs(
-    company_id: UUID,
+@router.get("", response_model=JobListResponse)
+def list_my_jobs(
+    company_id: CurrentCompanyIdDep,
     service: JobServiceDep,
+    _user: CurrentUserDep,
     title: Annotated[str | None, Query()] = None,
     department: Annotated[str | None, Query()] = None,
     location: Annotated[str | None, Query()] = None,
@@ -35,34 +37,43 @@ def list_jobs(
     )
 
 
-@router.post(
-    "/company/{company_id}",
-    response_model=JobResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_job(
-    company_id: UUID,
+@router.post("", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
+def create_my_job(
     payload: JobCreate,
+    company_id: CurrentCompanyIdDep,
     service: JobServiceDep,
+    _user: CurrentUserDep,
 ) -> JobResponse:
     return service.create_job(company_id, payload)
 
 
 @router.get("/{job_id}", response_model=JobResponse)
-def get_job(job_id: UUID, service: JobServiceDep) -> JobResponse:
-    return service.get_job(job_id)
+def get_my_job(
+    job_id: UUID,
+    company_id: CurrentCompanyIdDep,
+    service: JobServiceDep,
+    _user: CurrentUserDep,
+) -> JobResponse:
+    return service.get_job_for_company(job_id, company_id)
 
 
 @router.patch("/{job_id}", response_model=JobResponse)
-def update_job(
+def update_my_job(
     job_id: UUID,
     payload: JobUpdate,
+    company_id: CurrentCompanyIdDep,
     service: JobServiceDep,
+    _user: CurrentUserDep,
 ) -> JobResponse:
-    return service.update_job(job_id, payload)
+    return service.update_job_for_company(job_id, company_id, payload)
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_job(job_id: UUID, service: JobServiceDep) -> Response:
-    service.delete_job(job_id)
+def delete_my_job(
+    job_id: UUID,
+    company_id: CurrentCompanyIdDep,
+    service: JobServiceDep,
+    _user: CurrentUserDep,
+) -> Response:
+    service.delete_job_for_company(job_id, company_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

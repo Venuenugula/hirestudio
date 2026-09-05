@@ -7,9 +7,7 @@ import type {
   JobUpdatePayload,
 } from "@/features/jobs/types"
 
-function companyJobsPath(companyId: string) {
-  return `/api/v1/jobs/company/${companyId}`
-}
+const BASE = "/api/v1/jobs"
 
 function buildQuery(filters: JobFilters = {}) {
   const params = new URLSearchParams()
@@ -41,28 +39,26 @@ function buildQuery(filters: JobFilters = {}) {
   return query ? `?${query}` : ""
 }
 
-export function listJobs(companyId: string, filters: JobFilters = {}) {
-  return apiClient<JobListResponse>(
-    `${companyJobsPath(companyId)}${buildQuery(filters)}`,
-  )
+export function listJobs(_companyId: string, filters: JobFilters = {}) {
+  return apiClient<JobListResponse>(`${BASE}${buildQuery(filters)}`)
 }
 
-export function createJob(companyId: string, payload: JobCreatePayload) {
-  return apiClient<Job>(companyJobsPath(companyId), {
+export function createJob(_companyId: string, payload: JobCreatePayload) {
+  return apiClient<Job>(BASE, {
     method: "POST",
     body: payload,
   })
 }
 
 export function updateJob(jobId: string, payload: JobUpdatePayload) {
-  return apiClient<Job>(`/api/v1/jobs/${jobId}`, {
+  return apiClient<Job>(`${BASE}/${jobId}`, {
     method: "PATCH",
     body: payload,
   })
 }
 
 export function deleteJob(jobId: string) {
-  return apiClient<void>(`/api/v1/jobs/${jobId}`, {
+  return apiClient<void>(`${BASE}/${jobId}`, {
     method: "DELETE",
   })
 }

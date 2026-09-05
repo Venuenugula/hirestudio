@@ -76,3 +76,30 @@ def company(db_session: Session, unique_slug: str):
     db_session.flush()
     db_session.refresh(entity)
     return entity
+
+
+def auth_header(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
+
+
+def register_and_login(
+    client: TestClient,
+    slug: str,
+    *,
+    email: str | None = None,
+    password: str = "password123",
+    full_name: str = "Recruiter User",
+    company_name: str = "Acme Corp",
+) -> dict:
+    payload = {
+        "full_name": full_name,
+        "email": email or f"{slug}@example.com",
+        "password": password,
+        "company_name": company_name,
+        "company_slug": slug,
+        "primary_color": "#111111",
+        "secondary_color": "#FFFFFF",
+    }
+    response = client.post("/api/v1/auth/register", json=payload)
+    assert response.status_code == 201, response.text
+    return response.json()

@@ -1,13 +1,16 @@
-"""Seed demo company, careers page, and assignment sample jobs.
+"""Seed demo company, recruiter user, careers page, and assignment sample jobs.
 
 Idempotent strategy:
 - Upsert demo company by slug
+- Upsert demo recruiter user for that company
 - Ensure careers page exists and is published
 - Delete all jobs for the demo company, then insert CSV rows
 
 Usage (from backend/ with venv active):
 
     python -m app.scripts.seed_demo
+
+Default login: demo@demo-careers.test / demo-password-123
 """
 
 from __future__ import annotations
@@ -17,17 +20,23 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from app.core.security import hash_password
 from app.db.session import SessionLocal
 from app.models.company import Company
 from app.models.job import Job
+from app.models.user import User
 from app.repositories.careers_page_repository import CareersPageRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.job_repository import JobRepository
+from app.repositories.user_repository import UserRepository
 from app.services.job_csv_import import default_csv_path, load_sample_jobs
 from app.utils.slug import normalize_slug
 
 DEMO_SLUG = "demo-careers"
 DEMO_NAME = "Demo Careers Co"
+DEMO_EMAIL = "demo@demo-careers.test"
+DEMO_PASSWORD = "demo-password-123"
+DEMO_FULL_NAME = "Demo Recruiter"
 
 
 def _demo_page_config() -> dict:
@@ -58,9 +67,12 @@ def seed_demo(
     *,
     csv_path: Path | None = None,
     slug: str = DEMO_SLUG,
+    email: str = DEMO_EMAIL,
+    password: str = DEMO_PASSWORD,
 ) -> dict[str, object]:
     session = SessionLocal()
     company_repo = CompanyRepository(session)
+    user_repo = UserRepository(session)
     page_repo = CareersPageRepository(session)
     job_repo = JobRepository(session)
 
@@ -83,6 +95,33 @@ def seed_demo(
             company = company_repo.update_company(company)
             company_created = False
 
+        user = user_repo.get_by_company_id(company.id)
+        if user is None:
+            existing_email = user_repo.get_by_email(email.lower())
+            if existing_email is not None:
+                raise RuntimeError(
+                    f"Demo email '{email}' is already tied to another company"
+                )
+            user = user_repo.create_user(
+                User(
+                    company_id=company.id,
+                    full_name=DEMO_FULL_NAME,
+                    email=email.lower(),
+                    password_hash=hash_password(password),
+                    is_active=True,
+                )
+            )
+            user_created = True
+        else:
+            user.full_name = DEMO_FULL_NAME
+            user.email = email.lower()
+            user.password_hash = hash_password(password)
+            user.is_active = True
+            session.add(user)
+            session.flush()
+            session.refresh(user)
+            user_created = False
+
         page = page_repo.create_if_missing(company.id)
         config = _demo_page_config()
         page_repo.update_draft(page, config)
@@ -96,8 +135,12 @@ def seed_demo(
         session.commit()
         return {
             "company_id": str(company.id),
+            "user_id": str(user.id),
             "slug": company.slug,
+            "email": user.email,
+            "password": password,
             "company_created": company_created,
+            "user_created": user_created,
             "jobs_deleted": deleted,
             "jobs_imported": len(payloads),
             "csv_path": str(csv_path or default_csv_path()),

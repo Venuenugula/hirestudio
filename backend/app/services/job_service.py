@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError
 from app.models.job import Job
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.job_repository import JobFilters, JobRepository
@@ -53,8 +53,8 @@ class JobService:
             total=len(jobs),
         )
 
-    def get_job(self, job_id: UUID) -> JobResponse:
-        job = self._get_job_or_raise(job_id)
+    def get_job_for_company(self, job_id: UUID, company_id: UUID) -> JobResponse:
+        job = self._get_owned_job(job_id, company_id)
         return JobResponse.model_validate(job)
 
     def create_job(self, company_id: UUID, payload: JobCreate) -> JobResponse:
@@ -80,8 +80,13 @@ class JobService:
         self._db.refresh(created)
         return JobResponse.model_validate(created)
 
-    def update_job(self, job_id: UUID, payload: JobUpdate) -> JobResponse:
-        job = self._get_job_or_raise(job_id)
+    def update_job_for_company(
+        self,
+        job_id: UUID,
+        company_id: UUID,
+        payload: JobUpdate,
+    ) -> JobResponse:
+        job = self._get_owned_job(job_id, company_id)
         updates = payload.model_dump(exclude_unset=True)
 
         for field in (
@@ -107,8 +112,8 @@ class JobService:
         self._db.refresh(updated)
         return JobResponse.model_validate(updated)
 
-    def delete_job(self, job_id: UUID) -> None:
-        job = self._get_job_or_raise(job_id)
+    def delete_job_for_company(self, job_id: UUID, company_id: UUID) -> None:
+        job = self._get_owned_job(job_id, company_id)
         self._repository.delete_job(job)
         self._db.commit()
 
@@ -116,8 +121,10 @@ class JobService:
         if self._company_repository.get_by_id(company_id) is None:
             raise NotFoundError(f"Company '{company_id}' was not found")
 
-    def _get_job_or_raise(self, job_id: UUID) -> Job:
+    def _get_owned_job(self, job_id: UUID, company_id: UUID) -> Job:
         job = self._repository.get_by_id(job_id)
         if job is None:
             raise NotFoundError(f"Job '{job_id}' was not found")
+        if job.company_id != company_id:
+            raise ForbiddenError("You do not have access to this job")
         return job

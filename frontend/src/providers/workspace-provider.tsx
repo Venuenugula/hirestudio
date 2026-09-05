@@ -1,74 +1,37 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useMemo,
-  useState,
   type ReactNode,
 } from "react"
 
-const STORAGE_KEY = "cpb.activeCompanyId"
+import { useAuth } from "@/providers/auth-provider"
 
 type WorkspaceContextValue = {
-  /** Active tenant company id. Null means no company selected yet (create flow). */
+  /** Active tenant company id from the authenticated recruiter. */
   companyId: string | null
-  setCompanyId: (companyId: string | null) => void
-  clearCompanyId: () => void
   hasCompany: boolean
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null)
-
-function readInitialCompanyId(): string | null {
-  const fromEnv = import.meta.env.VITE_ACTIVE_COMPANY_ID?.trim()
-  if (fromEnv) {
-    return fromEnv
-  }
-
-  if (typeof window === "undefined") {
-    return null
-  }
-
-  return window.localStorage.getItem(STORAGE_KEY)
-}
 
 type WorkspaceProviderProps = {
   children: ReactNode
 }
 
 /**
- * Temporary workspace context.
- * Later replaced by authenticated user → company membership context.
+ * Workspace context derived from the authenticated user's company.
  */
 export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
-  const [companyId, setCompanyIdState] = useState<string | null>(() =>
-    readInitialCompanyId(),
-  )
-
-  const setCompanyId = useCallback((nextId: string | null) => {
-    setCompanyIdState(nextId)
-    if (typeof window === "undefined") {
-      return
-    }
-    if (nextId) {
-      window.localStorage.setItem(STORAGE_KEY, nextId)
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [])
-
-  const clearCompanyId = useCallback(() => {
-    setCompanyId(null)
-  }, [setCompanyId])
+  const { company, isAuthenticated } = useAuth()
+  const companyId = isAuthenticated ? (company?.id ?? null) : null
 
   const value = useMemo(
     () => ({
       companyId,
-      setCompanyId,
-      clearCompanyId,
       hasCompany: Boolean(companyId),
     }),
-    [companyId, setCompanyId, clearCompanyId],
+    [companyId],
   )
 
   return (

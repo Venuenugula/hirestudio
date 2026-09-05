@@ -16,6 +16,21 @@ type RequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown
 }
 
+let authToken: string | null = null
+let onUnauthorized: (() => void) | null = null
+
+export function setAuthToken(token: string | null) {
+  authToken = token
+}
+
+export function getAuthToken() {
+  return authToken
+}
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler
+}
+
 async function parseErrorDetail(response: Response): Promise<string> {
   try {
     const data: unknown = await response.json()
@@ -44,12 +59,16 @@ export async function apiClient<T>(
     headers: {
       Accept: "application/json",
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   if (!response.ok) {
+    if (response.status === 401 && authToken) {
+      onUnauthorized?.()
+    }
     throw new ApiError(response.status, await parseErrorDetail(response))
   }
 

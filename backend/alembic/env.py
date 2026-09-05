@@ -1,7 +1,8 @@
 """Alembic migration environment.
 
-Uses application settings for the database URL and imports Base.metadata
-so future models are auto-discovered when registered on Base.
+Database URL comes from application settings (DATABASE_URL).
+target_metadata is the application's SQLAlchemy Base.metadata so
+autogenerate stays in sync with ORM models.
 """
 
 from logging.config import fileConfig
@@ -12,8 +13,8 @@ from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.db.base import Base
 
-# Import models here in later phases so metadata is registered, e.g.:
-# from app.models import user, company  # noqa: F401
+# Import model modules here as they are added so metadata is registered:
+# import app.models  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
@@ -25,7 +26,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
+    """Run migrations without a live DBAPI connection."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -33,6 +34,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
@@ -40,9 +42,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
+    """Run migrations against a live database connection."""
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = settings.database_url
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
@@ -52,6 +57,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
+            compare_server_default=True,
         )
 
         with context.begin_transaction():

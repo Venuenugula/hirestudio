@@ -18,6 +18,12 @@ Reliable relational database with JSONB support for flexible page configuration.
 
 ---
 
+## Why Neon?
+
+Managed Postgres with a standard `DATABASE_URL`, TLS by default, and no local DB required for MVP development. The app uses SQLAlchemy 2.0 + psycopg v3 against Neon; credentials stay in environment variables only.
+
+---
+
 ## Why JSONB?
 
 Careers page sections evolve frequently. JSONB allows adding new section types without schema migrations while keeping structured business data relational.

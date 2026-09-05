@@ -26,6 +26,14 @@ python -m venv .venv
 .venv\Scripts\activate   # Windows
 pip install -e ".[dev]"
 cp .env.example .env
+```
+
+Set `DATABASE_URL` in `backend/.env` to your Neon Postgres connection string
+(psycopg v3 form preferred; include `sslmode=require`). Then:
+
+```bash
+python scripts/check_db_connection.py
+alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
 

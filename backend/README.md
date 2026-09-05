@@ -7,7 +7,8 @@ FastAPI API for the multi-tenant Careers Page Builder.
 - FastAPI
 - SQLAlchemy 2.0
 - Alembic
-- PostgreSQL
+- PostgreSQL (Neon via `DATABASE_URL`)
+- psycopg v3
 - Pydantic v2
 
 ## Architecture
@@ -31,10 +32,38 @@ pip install -e ".[dev]"
 cp .env.example .env
 ```
 
-Ensure PostgreSQL is running and `DATABASE_URL` in `.env` is correct.
+Set `DATABASE_URL` in `.env` to your Neon connection string (do not hardcode credentials in source):
+
+```env
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require
+```
+
+Plain `postgresql://` / `postgres://` URLs from the Neon UI are accepted and normalized to the psycopg v3 driver automatically.
+
+### Verify database connectivity
+
+```bash
+python scripts/check_db_connection.py
+```
+
+Expected output includes `Database connection OK`.
+
+### Migrations
 
 ```bash
 alembic upgrade head
+```
+
+Create a new revision after adding models:
+
+```bash
+alembic revision --autogenerate -m "describe_change"
+alembic upgrade head
+```
+
+### Run API
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -47,3 +76,5 @@ API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 ```bash
 pytest
 ```
+
+ORM models should inherit from `TimestampedBase` (`id`, `created_at`, `updated_at`). Inject DB sessions with `DbSession` from `app.dependencies`.

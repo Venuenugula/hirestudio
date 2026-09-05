@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Annotated
 
-from pydantic import BeforeValidator, Field
+from pydantic import BeforeValidator, Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -11,6 +11,16 @@ def parse_cors_origins(value: object) -> list[str]:
     if isinstance(value, list):
         return [str(origin).strip() for origin in value if str(origin).strip()]
     return []
+
+
+def normalize_database_url(url: str) -> str:
+    """Ensure the SQLAlchemy URL uses the psycopg v3 driver."""
+    normalized = url.strip()
+    if normalized.startswith("postgres://"):
+        normalized = "postgresql+psycopg://" + normalized.removeprefix("postgres://")
+    elif normalized.startswith("postgresql://") and "+psycopg" not in normalized:
+        normalized = "postgresql+psycopg://" + normalized.removeprefix("postgresql://")
+    return normalized
 
 
 class Settings(BaseSettings):
@@ -28,9 +38,9 @@ class Settings(BaseSettings):
     debug: bool = True
     api_v1_prefix: str = "/api/v1"
 
-    database_url: str = (
-        "postgresql+psycopg://postgres:postgres@localhost:5432/career_page_builder"
-    )
+    # Required. Provide a Neon (or other Postgres) URL via DATABASE_URL.
+    # Example: postgresql+psycopg://USER:PASSWORD@HOST/DB?sslmode=require
+    database_url: str = Field(..., description="PostgreSQL connection URL")
 
     cors_origins: Annotated[
         list[str],
@@ -48,6 +58,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
 
     upload_dir: str = "./uploads"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def ensure_psycopg_driver(cls, value: object) -> object:
+        if isinstance(value, str):
+            return normalize_database_url(value)
+        return value
 
 
 @lru_cache

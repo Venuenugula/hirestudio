@@ -1,1 +1,5 @@
-"""FastAPI dependency providers (populated in later phases)."""
+"""FastAPI dependency providers."""
+
+from app.dependencies.database import DbSession
+
+__all__ = ["DbSession"]

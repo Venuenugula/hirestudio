@@ -10,6 +10,7 @@ export const queryKeys = {
   },
   jobs: {
     all: ["jobs"] as const,
-    byCompany: (companyId: string) => ["jobs", "company", companyId] as const,
+    byCompany: (companyId: string, filters: Record<string, unknown> = {}) =>
+      ["jobs", "company", companyId, filters] as const,
   },
 } as const

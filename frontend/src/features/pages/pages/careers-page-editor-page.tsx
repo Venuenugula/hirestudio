@@ -110,7 +110,7 @@ export function CareersPageEditorPage() {
         </div>
 
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <LivePreview draft={editor.draft} />
+          <LivePreview draft={editor.draft} companyId={companyId} />
         </div>
       </div>
     </PageContainer>

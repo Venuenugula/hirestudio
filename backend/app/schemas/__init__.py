@@ -6,6 +6,7 @@ from app.schemas.careers_page import (
     PublishResponse,
 )
 from app.schemas.company import CompanyCreate, CompanyResponse, CompanyUpdate
+from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
 
 __all__ = [
     "CareersPageResponse",
@@ -13,5 +14,9 @@ __all__ = [
     "CompanyCreate",
     "CompanyResponse",
     "CompanyUpdate",
+    "JobCreate",
+    "JobListResponse",
+    "JobResponse",
+    "JobUpdate",
     "PublishResponse",
 ]

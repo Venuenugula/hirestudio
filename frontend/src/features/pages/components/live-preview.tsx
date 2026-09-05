@@ -7,7 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { formatEmploymentType } from "@/features/jobs/components/job-filters"
+import {
+  formatJobLabel,
+  formatRelativePostedAt,
+} from "@/features/jobs/constants"
 import { useJobsQuery } from "@/features/jobs/hooks/use-jobs-query"
 import type { Job } from "@/features/jobs/types"
 import type { PageConfig, PageSection } from "@/features/pages/types"
@@ -117,12 +120,24 @@ function JobsPreviewSection({ jobs }: { jobs: Job[] }) {
             <li
               key={job.id}
               className="rounded-lg border border-black/10 px-4 py-3"
-              style={{ borderColor: "color-mix(in oklab, currentColor 15%, transparent)" }}
+              style={{
+                borderColor: "color-mix(in oklab, currentColor 15%, transparent)",
+              }}
             >
-              <p className="font-medium">{job.title}</p>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <p className="font-medium">{job.title}</p>
+                <p className="text-xs opacity-60">
+                  {formatRelativePostedAt(job.posted_at)}
+                </p>
+              </div>
               <p className="text-sm opacity-75">
                 {job.department} · {job.location} ·{" "}
-                {formatEmploymentType(job.employment_type)}
+                {formatJobLabel(job.work_policy)}
+              </p>
+              <p className="text-sm opacity-70">
+                {formatJobLabel(job.experience_level)} ·{" "}
+                {formatJobLabel(job.job_type)}
+                {job.salary_range ? ` · ${job.salary_range}` : ""}
               </p>
             </li>
           ))}

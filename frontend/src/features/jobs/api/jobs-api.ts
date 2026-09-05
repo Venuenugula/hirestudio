@@ -25,6 +25,15 @@ function buildQuery(filters: JobFilters = {}) {
   if (filters.employment_type?.trim()) {
     params.set("employment_type", filters.employment_type.trim())
   }
+  if (filters.work_policy?.trim()) {
+    params.set("work_policy", filters.work_policy.trim())
+  }
+  if (filters.experience_level?.trim()) {
+    params.set("experience_level", filters.experience_level.trim())
+  }
+  if (filters.job_type?.trim()) {
+    params.set("job_type", filters.job_type.trim())
+  }
   if (filters.is_active === true || filters.is_active === false) {
     params.set("is_active", String(filters.is_active))
   }

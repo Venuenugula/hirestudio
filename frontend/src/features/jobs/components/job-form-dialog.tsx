@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -9,14 +9,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { formatEmploymentType } from "@/features/jobs/components/job-filters"
+import {
+  EMPLOYMENT_TYPES,
+  EXPERIENCE_LEVELS,
+  JOB_TYPES,
+  WORK_POLICIES,
+  formatJobLabel,
+} from "@/features/jobs/constants"
 import {
   jobFormDefaults,
   jobFormSchema,
   type JobFormParsed,
   type JobFormValues,
 } from "@/features/jobs/schemas/job-schema"
-import { EMPLOYMENT_TYPES, type Job } from "@/features/jobs/types"
+import type { Job } from "@/features/jobs/types"
 
 type JobFormDialogProps = {
   open: boolean
@@ -27,6 +33,16 @@ type JobFormDialogProps = {
   onSubmit: (values: JobFormParsed) => Promise<void> | void
 }
 
+function pickEnum<T extends string>(
+  value: string,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  return (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : fallback
+}
+
 function toValues(job?: Job | null): JobFormValues {
   if (!job) {
     return jobFormDefaults
@@ -35,11 +51,15 @@ function toValues(job?: Job | null): JobFormValues {
     title: job.title,
     department: job.department,
     location: job.location,
-    employment_type: (EMPLOYMENT_TYPES as readonly string[]).includes(
-      job.employment_type,
-    )
-      ? (job.employment_type as JobFormValues["employment_type"])
-      : "full_time",
+    employment_type: pickEnum(job.employment_type, EMPLOYMENT_TYPES, "full_time"),
+    work_policy: pickEnum(job.work_policy, WORK_POLICIES, "remote"),
+    experience_level: pickEnum(
+      job.experience_level,
+      EXPERIENCE_LEVELS,
+      "mid_level",
+    ),
+    job_type: pickEnum(job.job_type, JOB_TYPES, "permanent"),
+    salary_range: job.salary_range ?? "",
     description: job.description,
     is_active: job.is_active,
     application_url: job.application_url ?? "",
@@ -81,11 +101,11 @@ export function JobFormDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={mode === "create" ? "Create job" : "Edit job"}
-      description="Open roles appear in the careers page preview when active."
+      description="Open roles appear on the public careers site when active."
       className="sm:max-w-xl"
     >
       <form
-        className="space-y-4"
+        className="max-h-[70vh] space-y-4 overflow-y-auto pr-1"
         onSubmit={handleSubmit(async (values) => {
           await onSubmit(values)
           onOpenChange(false)
@@ -103,18 +123,42 @@ export function JobFormDialog({
             <Input disabled={saving} {...register("location")} />
           </Field>
         </div>
-        <Field label="Employment type" error={errors.employment_type?.message}>
-          <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Employment type" error={errors.employment_type?.message}>
+            <SelectField
+              disabled={saving}
+              options={EMPLOYMENT_TYPES}
+              {...register("employment_type")}
+            />
+          </Field>
+          <Field label="Work policy" error={errors.work_policy?.message}>
+            <SelectField
+              disabled={saving}
+              options={WORK_POLICIES}
+              {...register("work_policy")}
+            />
+          </Field>
+          <Field label="Experience" error={errors.experience_level?.message}>
+            <SelectField
+              disabled={saving}
+              options={EXPERIENCE_LEVELS}
+              {...register("experience_level")}
+            />
+          </Field>
+          <Field label="Job type" error={errors.job_type?.message}>
+            <SelectField
+              disabled={saving}
+              options={JOB_TYPES}
+              {...register("job_type")}
+            />
+          </Field>
+        </div>
+        <Field label="Salary range" error={errors.salary_range?.message}>
+          <Input
+            placeholder="USD 80K–120K / year"
             disabled={saving}
-            {...register("employment_type")}
-          >
-            {EMPLOYMENT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {formatEmploymentType(type)}
-              </option>
-            ))}
-          </select>
+            {...register("salary_range")}
+          />
         </Field>
         <Field label="Description" error={errors.description?.message}>
           <Textarea disabled={saving} {...register("description")} />
@@ -130,7 +174,7 @@ export function JobFormDialog({
           <div>
             <Label htmlFor="job-active">Active</Label>
             <p className="text-xs text-muted-foreground">
-              Inactive jobs are hidden from the public preview.
+              Inactive jobs are hidden from the public careers site.
             </p>
           </div>
           <Controller
@@ -165,6 +209,29 @@ export function JobFormDialog({
         </div>
       </form>
     </Dialog>
+  )
+}
+
+function SelectField({
+  options,
+  disabled,
+  ...props
+}: {
+  options: readonly string[]
+  disabled?: boolean
+} & ComponentProps<"select">) {
+  return (
+    <select
+      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      disabled={disabled}
+      {...props}
+    >
+      {options.map((option) => (
+        <option key={option} value={option}>
+          {formatJobLabel(option)}
+        </option>
+      ))}
+    </select>
   )
 }
 

@@ -26,6 +26,9 @@ const EMPTY_FILTERS: JobFilters = {
   department: "",
   location: "",
   employment_type: undefined,
+  work_policy: undefined,
+  experience_level: undefined,
+  job_type: undefined,
   is_active: null,
 }
 
@@ -48,6 +51,9 @@ export function JobsPage() {
         filters.department?.trim() ||
         filters.location?.trim() ||
         filters.employment_type ||
+        filters.work_policy ||
+        filters.experience_level ||
+        filters.job_type ||
         filters.is_active === true ||
         filters.is_active === false,
     )

@@ -13,6 +13,9 @@ class JobFilters:
     department: str | None = None
     location: str | None = None
     employment_type: str | None = None
+    work_policy: str | None = None
+    experience_level: str | None = None
+    job_type: str | None = None
     is_active: bool | None = None
 
 
@@ -38,7 +41,7 @@ class JobRepository:
     ) -> list[Job]:
         statement = select(Job).where(Job.company_id == company_id)
         statement = self._apply_filters(statement, filters)
-        statement = statement.order_by(Job.created_at.desc())
+        statement = statement.order_by(Job.posted_at.desc(), Job.created_at.desc())
         return list(self._db.scalars(statement).all())
 
     def count_by_company(
@@ -51,6 +54,14 @@ class JobRepository:
         )
         statement = self._apply_filters(statement, filters)
         return int(self._db.scalar(statement) or 0)
+
+    def delete_all_for_company(self, company_id: UUID) -> int:
+        jobs = self.list_by_company(company_id)
+        count = len(jobs)
+        for job in jobs:
+            self._db.delete(job)
+        self._db.flush()
+        return count
 
     def update_job(self, job: Job) -> Job:
         self._db.add(job)
@@ -78,8 +89,16 @@ class JobRepository:
             )
         if filters.employment_type:
             statement = statement.where(
-                Job.employment_type.ilike(f"%{filters.employment_type.strip()}%")
+                Job.employment_type == filters.employment_type.strip()
             )
+        if filters.work_policy:
+            statement = statement.where(Job.work_policy == filters.work_policy.strip())
+        if filters.experience_level:
+            statement = statement.where(
+                Job.experience_level == filters.experience_level.strip()
+            )
+        if filters.job_type:
+            statement = statement.where(Job.job_type == filters.job_type.strip())
         if filters.is_active is not None:
             statement = statement.where(Job.is_active.is_(filters.is_active))
 

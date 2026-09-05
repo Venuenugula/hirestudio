@@ -30,19 +30,25 @@ export function useUpdateJobMutation(companyId: string) {
         }
         queryClient.setQueryData<JobListResponse>(key, {
           ...data,
-          items: data.items.map((job) =>
-            job.id === jobId
-              ? {
-                  ...job,
-                  ...payload,
-                  application_url:
-                    payload.application_url === undefined
-                      ? job.application_url
-                      : payload.application_url,
-                  updated_at: new Date().toISOString(),
-                }
-              : job,
-          ),
+          items: data.items.map((job) => {
+            if (job.id !== jobId) {
+              return job
+            }
+            return {
+              ...job,
+              ...payload,
+              application_url:
+                payload.application_url === undefined
+                  ? job.application_url
+                  : payload.application_url,
+              salary_range:
+                payload.salary_range === undefined
+                  ? job.salary_range
+                  : payload.salary_range,
+              posted_at: payload.posted_at ?? job.posted_at,
+              updated_at: new Date().toISOString(),
+            }
+          }),
         })
       })
 

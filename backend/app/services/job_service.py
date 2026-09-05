@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -30,6 +31,9 @@ class JobService:
         department: str | None = None,
         location: str | None = None,
         employment_type: str | None = None,
+        work_policy: str | None = None,
+        experience_level: str | None = None,
+        job_type: str | None = None,
         is_active: bool | None = None,
     ) -> JobListResponse:
         self._require_company(company_id)
@@ -38,6 +42,9 @@ class JobService:
             department=department,
             location=location,
             employment_type=employment_type,
+            work_policy=work_policy,
+            experience_level=experience_level,
+            job_type=job_type,
             is_active=is_active,
         )
         jobs = self._repository.list_by_company(company_id, filters)
@@ -52,15 +59,21 @@ class JobService:
 
     def create_job(self, company_id: UUID, payload: JobCreate) -> JobResponse:
         self._require_company(company_id)
+        salary = payload.salary_range.strip() if payload.salary_range else None
         job = Job(
             company_id=company_id,
             title=payload.title.strip(),
             department=payload.department.strip(),
             location=payload.location.strip(),
-            employment_type=payload.employment_type.strip(),
+            employment_type=payload.employment_type,
+            work_policy=payload.work_policy,
+            experience_level=payload.experience_level,
+            job_type=payload.job_type,
+            salary_range=salary or None,
             description=payload.description.strip(),
             is_active=payload.is_active,
             application_url=payload.application_url,
+            posted_at=payload.posted_at or datetime.now(UTC),
         )
         created = self._repository.create_job(job)
         self._db.commit()
@@ -71,9 +84,20 @@ class JobService:
         job = self._get_job_or_raise(job_id)
         updates = payload.model_dump(exclude_unset=True)
 
-        for field in ("title", "department", "location", "employment_type", "description"):
+        for field in (
+            "title",
+            "department",
+            "location",
+            "description",
+            "salary_range",
+        ):
             if field in updates and isinstance(updates[field], str):
-                updates[field] = updates[field].strip()
+                updates[field] = updates[field].strip() or (
+                    None if field == "salary_range" else updates[field].strip()
+                )
+
+        if "salary_range" in updates and updates["salary_range"] == "":
+            updates["salary_range"] = None
 
         for field, value in updates.items():
             setattr(job, field, value)

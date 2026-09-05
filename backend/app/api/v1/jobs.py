@@ -17,6 +17,9 @@ def list_jobs(
     department: Annotated[str | None, Query()] = None,
     location: Annotated[str | None, Query()] = None,
     employment_type: Annotated[str | None, Query()] = None,
+    work_policy: Annotated[str | None, Query()] = None,
+    experience_level: Annotated[str | None, Query()] = None,
+    job_type: Annotated[str | None, Query()] = None,
     is_active: Annotated[bool | None, Query()] = None,
 ) -> JobListResponse:
     return service.list_jobs(
@@ -25,6 +28,9 @@ def list_jobs(
         department=department,
         location=location,
         employment_type=employment_type,
+        work_policy=work_policy,
+        experience_level=experience_level,
+        job_type=job_type,
         is_active=is_active,
     )
 

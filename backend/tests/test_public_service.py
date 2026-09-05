@@ -31,6 +31,9 @@ def test_get_public_site_excludes_draft_and_inactive_jobs(
         department="Eng",
         location="Remote",
         employment_type="full_time",
+        work_policy="remote",
+        experience_level="mid_level",
+        job_type="permanent",
         description="Desc",
         is_active=True,
     )
@@ -40,6 +43,9 @@ def test_get_public_site_excludes_draft_and_inactive_jobs(
         department="Eng",
         location="Remote",
         employment_type="full_time",
+        work_policy="hybrid",
+        experience_level="junior",
+        job_type="temporary",
         description="Desc",
         is_active=False,
     )
@@ -80,6 +86,9 @@ def test_get_public_job_requires_active_job(db_session, unique_slug: str) -> Non
         department="Eng",
         location="Remote",
         employment_type="full_time",
+        work_policy="remote",
+        experience_level="senior",
+        job_type="permanent",
         description="Desc",
         is_active=False,
     )

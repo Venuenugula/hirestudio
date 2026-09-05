@@ -14,6 +14,7 @@ export function useCreateJobMutation(companyId: string) {
         queryKey: ["jobs", "company", companyId],
       })
 
+      const now = new Date().toISOString()
       const optimisticJob: Job = {
         id: `temp-${crypto.randomUUID()}`,
         company_id: companyId,
@@ -21,11 +22,16 @@ export function useCreateJobMutation(companyId: string) {
         department: payload.department,
         location: payload.location,
         employment_type: payload.employment_type,
+        work_policy: payload.work_policy,
+        experience_level: payload.experience_level,
+        job_type: payload.job_type,
+        salary_range: payload.salary_range ?? null,
         description: payload.description,
         is_active: payload.is_active,
         application_url: payload.application_url ?? null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        posted_at: payload.posted_at ?? now,
+        created_at: now,
+        updated_at: now,
       }
 
       const previous = queryClient.getQueriesData<JobListResponse>({

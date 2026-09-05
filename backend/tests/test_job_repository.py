@@ -2,44 +2,45 @@ from app.models.job import Job
 from app.repositories.job_repository import JobFilters, JobRepository
 
 
+def _job(company_id, **overrides) -> Job:
+    data = {
+        "company_id": company_id,
+        "title": "Backend Engineer",
+        "department": "Engineering",
+        "location": "Remote",
+        "employment_type": "full_time",
+        "work_policy": "remote",
+        "experience_level": "mid_level",
+        "job_type": "permanent",
+        "description": "Build APIs",
+    }
+    data.update(overrides)
+    return Job(**data)
+
+
 def test_create_and_get_job(db_session, company) -> None:
     repo = JobRepository(db_session)
-    job = Job(
-        company_id=company.id,
-        title="Backend Engineer",
-        department="Engineering",
-        location="Remote",
-        employment_type="full_time",
-        description="Build APIs",
-    )
-    created = repo.create_job(job)
+    created = repo.create_job(_job(company.id))
 
     found = repo.get_by_id(created.id)
     assert found is not None
     assert found.title == "Backend Engineer"
+    assert found.work_policy == "remote"
+    assert found.posted_at is not None
 
 
 def test_list_filters(db_session, company) -> None:
     repo = JobRepository(db_session)
+    repo.create_job(_job(company.id, is_active=True))
     repo.create_job(
-        Job(
-            company_id=company.id,
-            title="Backend Engineer",
-            department="Engineering",
-            location="Remote",
-            employment_type="full_time",
-            description="API work",
-            is_active=True,
-        )
-    )
-    repo.create_job(
-        Job(
-            company_id=company.id,
+        _job(
+            company.id,
             title="Sales Lead",
             department="Sales",
             location="New York",
-            employment_type="full_time",
-            description="Grow revenue",
+            work_policy="on_site",
+            experience_level="senior",
+            job_type="temporary",
             is_active=False,
         )
     )
@@ -57,16 +58,19 @@ def test_list_filters(db_session, company) -> None:
     titled = repo.list_by_company(company.id, JobFilters(title="sales"))
     assert len(titled) == 1
 
+    on_site = repo.list_by_company(company.id, JobFilters(work_policy="on_site"))
+    assert len(on_site) == 1
+
 
 def test_delete_job(db_session, company) -> None:
     repo = JobRepository(db_session)
     job = repo.create_job(
-        Job(
-            company_id=company.id,
+        _job(
+            company.id,
             title="Temp Role",
             department="Ops",
-            location="Remote",
             employment_type="contract",
+            job_type="temporary",
             description="Temporary",
         )
     )

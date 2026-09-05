@@ -21,6 +21,10 @@ def _create_job(client, company_id: str, **overrides):
         "department": "Engineering",
         "location": "Remote",
         "employment_type": "full_time",
+        "work_policy": "remote",
+        "experience_level": "mid_level",
+        "job_type": "permanent",
+        "salary_range": "USD 80K–120K / year",
         "description": "Build scalable APIs",
         "is_active": True,
     }

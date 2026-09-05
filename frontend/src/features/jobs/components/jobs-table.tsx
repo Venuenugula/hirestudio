@@ -1,7 +1,10 @@
 import { Pencil, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { formatEmploymentType } from "@/features/jobs/components/job-filters"
+import {
+  formatJobLabel,
+  formatRelativePostedAt,
+} from "@/features/jobs/constants"
 import type { Job } from "@/features/jobs/types"
 
 type JobsTableProps = {
@@ -13,14 +16,17 @@ type JobsTableProps = {
 export function JobsTable({ jobs, onEdit, onDelete }: JobsTableProps) {
   return (
     <>
-      <div className="hidden overflow-hidden rounded-xl border border-border md:block">
-        <table className="w-full text-left text-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+        <table className="w-full min-w-[56rem] text-left text-sm">
           <thead className="border-b border-border bg-muted/40">
             <tr>
               <th className="px-4 py-3 font-medium">Title</th>
               <th className="px-4 py-3 font-medium">Department</th>
               <th className="px-4 py-3 font-medium">Location</th>
+              <th className="px-4 py-3 font-medium">Policy</th>
+              <th className="px-4 py-3 font-medium">Level</th>
               <th className="px-4 py-3 font-medium">Type</th>
+              <th className="px-4 py-3 font-medium">Posted</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
@@ -32,7 +38,17 @@ export function JobsTable({ jobs, onEdit, onDelete }: JobsTableProps) {
                 <td className="px-4 py-3 text-muted-foreground">{job.department}</td>
                 <td className="px-4 py-3 text-muted-foreground">{job.location}</td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {formatEmploymentType(job.employment_type)}
+                  {formatJobLabel(job.work_policy)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {formatJobLabel(job.experience_level)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {formatJobLabel(job.employment_type)} ·{" "}
+                  {formatJobLabel(job.job_type)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {formatRelativePostedAt(job.posted_at)}
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge active={job.is_active} />
@@ -78,7 +94,12 @@ export function JobsTable({ jobs, onEdit, onDelete }: JobsTableProps) {
                   {job.department} · {job.location}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {formatEmploymentType(job.employment_type)}
+                  {formatJobLabel(job.work_policy)} ·{" "}
+                  {formatJobLabel(job.experience_level)} ·{" "}
+                  {formatJobLabel(job.job_type)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatRelativePostedAt(job.posted_at)}
                 </p>
                 <StatusBadge active={job.is_active} />
               </div>

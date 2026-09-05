@@ -61,11 +61,18 @@ alembic revision --autogenerate -m "describe_change"
 alembic upgrade head
 ```
 
-### Run API
+### Seed demo data
+
+Imports the assignment sample jobs CSV into a demo company (`demo-careers`):
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+alembic upgrade head
+python -m app.scripts.seed_demo
 ```
+
+Public page: `/careers/demo-careers` (frontend). Re-running the seed deletes and re-imports demo jobs (idempotent wipe-and-reload).
+
+CSV path defaults to `backend/data/sample_jobs.csv`.
 
 Health check: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
 

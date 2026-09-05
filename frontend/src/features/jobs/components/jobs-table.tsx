@@ -16,9 +16,9 @@ type JobsTableProps = {
 export function JobsTable({ jobs, onEdit, onDelete }: JobsTableProps) {
   return (
     <>
-      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[56rem] text-left text-sm">
-          <thead className="border-b border-border bg-muted/40">
+          <thead className="border-y border-border bg-muted/40">
             <tr>
               <th className="px-4 py-3 font-medium">Title</th>
               <th className="px-4 py-3 font-medium">Department</th>

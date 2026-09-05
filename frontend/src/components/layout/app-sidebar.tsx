@@ -1,6 +1,7 @@
 import {
   BriefcaseBusiness,
   Building2,
+  Layers,
   LayoutDashboard,
   FileStack,
 } from "lucide-react"
@@ -24,7 +25,10 @@ type AppSidebarProps = {
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
   return (
     <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex h-14 items-center px-5">
+      <div className="flex h-14 items-center gap-2.5 px-5">
+        <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+          <Layers className="size-4" aria-hidden />
+        </span>
         <NavLink
           to={routes.home}
           onClick={onNavigate}
@@ -42,10 +46,10 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors",
                 isActive
                   ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
               )
             }
           >

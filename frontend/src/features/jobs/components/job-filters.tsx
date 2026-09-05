@@ -23,7 +23,7 @@ export function JobFiltersBar({ value, onChange }: JobFiltersProps) {
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Field label="Search title">
           <Input

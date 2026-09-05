@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom"
 import { useMemo, useState } from "react"
+import { Briefcase, Plus } from "lucide-react"
 
 import { ErrorState } from "@/components/shared/error-state"
 import { LoadingSpinner } from "@/components/shared/loading-spinner"
 import { PageContainer } from "@/components/shared/page-container"
 import { PageHeader } from "@/components/shared/page-header"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { DeleteJobDialog } from "@/features/jobs/components/delete-job-dialog"
 import { EmptyJobs } from "@/features/jobs/components/empty-jobs"
 import { JobFiltersBar } from "@/features/jobs/components/job-filters"
@@ -108,41 +110,55 @@ export function JobsPage() {
   }
 
   const jobs = jobsQuery.data?.items ?? []
+  const activeCount = jobs.filter((job) => job.is_active).length
 
   return (
     <PageContainer className="max-w-7xl">
       <PageHeader
+        badge={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 dark:bg-teal-950 dark:text-teal-300">
+            <Briefcase className="size-3" aria-hidden />
+            {jobsQuery.isSuccess
+              ? `${activeCount} active · ${jobs.length} shown`
+              : "Open roles"}
+          </span>
+        }
         title="Jobs"
         description="Create and manage open roles for the public careers page."
         actions={
           <Button type="button" onClick={openCreate}>
+            <Plus className="size-4" />
             Create job
           </Button>
         }
       />
 
-      <JobFiltersBar value={filters} onChange={setFilters} />
+      <Card className="gap-0 overflow-hidden py-0 shadow-sm">
+        <CardContent className="space-y-4 p-5">
+          <JobFiltersBar value={filters} onChange={setFilters} />
 
-      {jobsQuery.isLoading ? <LoadingSpinner label="Loading jobs" /> : null}
+          {jobsQuery.isLoading ? <LoadingSpinner label="Loading jobs" /> : null}
 
-      {jobsQuery.isError ? (
-        <ErrorState
-          message={getErrorMessage(jobsQuery.error, "Failed to load jobs")}
-          onRetry={() => void jobsQuery.refetch()}
-        />
-      ) : null}
+          {jobsQuery.isError ? (
+            <ErrorState
+              message={getErrorMessage(jobsQuery.error, "Failed to load jobs")}
+              onRetry={() => void jobsQuery.refetch()}
+            />
+          ) : null}
 
-      {jobsQuery.isSuccess && jobs.length === 0 ? (
-        <EmptyJobs
-          hasFilters={hasActiveFilters}
-          onCreate={openCreate}
-          onClearFilters={() => setFilters(EMPTY_FILTERS)}
-        />
-      ) : null}
+          {jobsQuery.isSuccess && jobs.length === 0 ? (
+            <EmptyJobs
+              hasFilters={hasActiveFilters}
+              onCreate={openCreate}
+              onClearFilters={() => setFilters(EMPTY_FILTERS)}
+            />
+          ) : null}
 
-      {jobsQuery.isSuccess && jobs.length > 0 ? (
-        <JobsTable jobs={jobs} onEdit={openEdit} onDelete={openDelete} />
-      ) : null}
+          {jobsQuery.isSuccess && jobs.length > 0 ? (
+            <JobsTable jobs={jobs} onEdit={openEdit} onDelete={openDelete} />
+          ) : null}
+        </CardContent>
+      </Card>
 
       <JobFormDialog
         open={formOpen}

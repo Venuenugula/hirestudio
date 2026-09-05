@@ -1,6 +1,24 @@
+import type {
+  AboutVariant,
+  BenefitsVariant,
+  ButtonStyleId,
+  CtaVariant,
+  FontId,
+  HeroVariant,
+  JobsVariant,
+  PageStyleId,
+  RadiusId,
+  ThemePackId,
+} from "@/features/pages/lib/design-system"
+
 export type PageTheme = {
   primaryColor: string
   secondaryColor: string
+  styleId?: PageStyleId
+  themePackId?: ThemePackId
+  fontId?: FontId
+  radiusId?: RadiusId
+  buttonStyle?: ButtonStyleId
 }
 
 export type PageTemplateMeta = {
@@ -18,12 +36,14 @@ export type HeroSection = SectionBase & {
   title: string
   subtitle: string
   ctaLabel: string
+  variant?: HeroVariant
 }
 
 export type AboutSection = SectionBase & {
   type: "about"
   title: string
   body: string
+  variant?: AboutVariant
 }
 
 export type BenefitItem = {
@@ -36,12 +56,14 @@ export type BenefitsSection = SectionBase & {
   type: "benefits"
   title: string
   items: BenefitItem[]
+  variant?: BenefitsVariant
 }
 
 export type OpenRolesSection = SectionBase & {
   type: "open_roles"
   title: string
   subtitle: string
+  variant?: JobsVariant
 }
 
 export type CtaSection = SectionBase & {
@@ -49,6 +71,7 @@ export type CtaSection = SectionBase & {
   title: string
   subtitle: string
   buttonLabel: string
+  variant?: CtaVariant
 }
 
 export type PageSection =

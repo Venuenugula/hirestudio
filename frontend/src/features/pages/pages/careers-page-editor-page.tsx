@@ -13,7 +13,7 @@ import { LivePreview } from "@/features/pages/components/live-preview"
 import { PublishBar } from "@/features/pages/components/publish-bar"
 import { SectionBlockEditor } from "@/features/pages/components/section-block-editor"
 import { SectionNavigator } from "@/features/pages/components/section-navigator"
-import { ThemeEditor } from "@/features/pages/components/theme-editor"
+import { DesignStudio } from "@/features/pages/components/design-studio"
 import { useCareersPageEditor } from "@/features/pages/hooks/use-careers-page-editor"
 import { useEditorShortcuts } from "@/features/pages/hooks/use-editor-shortcuts"
 import { useUnsavedChangesGuard } from "@/features/pages/hooks/use-unsaved-changes-guard"
@@ -77,6 +77,7 @@ export function CareersPageEditorPage() {
     return (
       <PageContainer>
         <PageHeader
+          badge={<EditorStatusBadge published={false} />}
           title="Careers Page"
           description="Edit draft sections and publish the public careers experience."
         />
@@ -104,6 +105,7 @@ export function CareersPageEditorPage() {
   }
 
   const busy = editor.isPublishing
+  const isPublished = Boolean(editor.publishedAt)
 
   const selectSection = (sectionId: string) => {
     editor.scrollAndFocusSection(sectionId)
@@ -112,7 +114,18 @@ export function CareersPageEditorPage() {
   return (
     <PageContainer className="max-w-7xl">
       <PageHeader
-        title="Careers Page"
+        badge={<EditorStatusBadge published={isPublished} />}
+        title={
+          <>
+            Careers Page
+            {company?.name ? (
+              <>
+                {" "}
+                <span className="text-primary">{company.name}</span>
+              </>
+            ) : null}
+          </>
+        }
         description="Build your careers page with collapsible, reorderable blocks."
         actions={
           <Button asChild variant="outline" size="sm">
@@ -149,10 +162,11 @@ export function CareersPageEditorPage() {
         </aside>
 
         <div className="space-y-4">
-          <ThemeEditor
+          <DesignStudio
             theme={editor.draft.theme}
             disabled={busy}
             onChange={editor.updateTheme}
+            onApplyStyle={editor.applyStylePreset}
           />
           <SectionBlockEditor
             sections={editor.draft.sections}
@@ -184,7 +198,13 @@ export function CareersPageEditorPage() {
               <LivePreview
                 draft={editor.draft}
                 companyId={companyId}
-                companyName={company?.name}
+                company={{
+                  name: company?.name ?? "Company",
+                  logo_url: company?.logo_url ?? null,
+                  primary_color: company?.primary_color ?? "#0F766E",
+                  secondary_color: company?.secondary_color ?? "#F8FAFC",
+                }}
+                slug={company?.slug ?? "preview"}
               />
             </motion.div>
           </AnimatePresence>
@@ -193,5 +213,24 @@ export function CareersPageEditorPage() {
 
       <AutosaveIndicator status={editor.autosaveStatus} />
     </PageContainer>
+  )
+}
+
+function EditorStatusBadge({ published }: { published: boolean }) {
+  return (
+    <span
+      className={
+        published
+          ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+          : "inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+      }
+    >
+      <span
+        className={
+          published ? "size-1.5 rounded-full bg-emerald-500" : "size-1.5 rounded-full bg-amber-500"
+        }
+      />
+      {published ? "Published" : "Draft"}
+    </span>
   )
 }

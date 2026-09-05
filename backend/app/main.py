@@ -1,6 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -30,6 +33,14 @@ def create_app() -> FastAPI:
             status_code=exc.status_code,
             content={"detail": exc.message},
         )
+
+    upload_root = Path(settings.upload_dir)
+    upload_root.mkdir(parents=True, exist_ok=True)
+    application.mount(
+        "/uploads",
+        StaticFiles(directory=str(upload_root)),
+        name="uploads",
+    )
 
     application.include_router(api_router, prefix=settings.api_v1_prefix)
 

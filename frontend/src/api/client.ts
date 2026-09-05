@@ -76,16 +76,25 @@ export async function apiClient<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { body, headers, ...rest } = options
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
     headers: {
       Accept: "application/json",
-      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(body === undefined || isFormData
+        ? {}
+        : { "Content-Type": "application/json" }),
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...headers,
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body:
+      body === undefined
+        ? undefined
+        : isFormData
+          ? (body as FormData)
+          : JSON.stringify(body),
   })
 
   if (!response.ok) {

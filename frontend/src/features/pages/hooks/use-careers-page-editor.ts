@@ -4,6 +4,7 @@ import { useCareersPageQuery } from "@/features/pages/hooks/use-careers-page-que
 import { usePublishCareersPageMutation } from "@/features/pages/hooks/use-publish-careers-page-mutation"
 import { useUpdateDraftMutation } from "@/features/pages/hooks/use-update-draft-mutation"
 import {
+  applyPageStylePreset,
   canDeleteSection,
   createSection,
   duplicateSection,
@@ -11,6 +12,7 @@ import {
   reorderSections,
   serializePageConfig,
 } from "@/features/pages/lib/page-config"
+import type { PageStyleId } from "@/features/pages/lib/design-system"
 import type {
   AutosaveStatus,
   PageConfig,
@@ -128,6 +130,15 @@ export function useCareersPageEditor(companyId: string | null) {
         ...current,
         theme: { ...current.theme, ...theme },
       }
+    })
+  }, [])
+
+  const applyStylePreset = useCallback((styleId: PageStyleId) => {
+    setDraft((current) => {
+      if (!current) {
+        return current
+      }
+      return applyPageStylePreset(current, styleId)
     })
   }, [])
 
@@ -385,6 +396,7 @@ export function useCareersPageEditor(companyId: string | null) {
     clearFocusSection,
     scrollAndFocusSection,
     updateTheme,
+    applyStylePreset,
     addSection,
     removeSection,
     duplicateSection: duplicateSectionById,

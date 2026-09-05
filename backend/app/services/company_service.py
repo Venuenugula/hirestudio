@@ -25,6 +25,9 @@ class CompanyService:
             slug=slug,
             logo_url=payload.logo_url,
             banner_url=payload.banner_url,
+            website=payload.website,
+            industry=payload.industry,
+            company_size=payload.company_size,
             primary_color=payload.primary_color,
             secondary_color=payload.secondary_color,
             is_active=payload.is_active,
@@ -64,6 +67,11 @@ class CompanyService:
 
         if "name" in updates and isinstance(updates["name"], str):
             updates["name"] = updates["name"].strip()
+
+        for text_field in ("website", "industry", "company_size"):
+            if text_field in updates and isinstance(updates[text_field], str):
+                trimmed = updates[text_field].strip()
+                updates[text_field] = trimmed or None
 
         for field, value in updates.items():
             setattr(company, field, value)

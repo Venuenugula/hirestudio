@@ -5,9 +5,9 @@ import {
   useRef,
   useState,
 } from "react"
+import { motion } from "framer-motion"
 
 import { useJobsQuery } from "@/features/jobs/hooks/use-jobs-query"
-import { PreviewDocument } from "@/features/pages/components/preview-document"
 import { PreviewToolbar } from "@/features/pages/components/preview-toolbar"
 import {
   clampPreviewZoom,
@@ -18,18 +18,29 @@ import {
   type PreviewDevice,
 } from "@/features/pages/lib/preview-devices"
 import type { PageConfig } from "@/features/pages/types"
+import {
+  CareersPageRenderer,
+  type CareersPageCompany,
+} from "@/features/public/components/careers-page-renderer"
 import { cn } from "@/lib/utils"
 
 type LivePreviewProps = {
   draft: PageConfig
   companyId: string
-  companyName?: string
+  company: CareersPageCompany
+  slug: string
 }
 
+const PREVIEW_SPRING = { type: "spring" as const, stiffness: 280, damping: 28 }
+
+/**
+ * Device chrome + scaling only. Page content is CareersPageRenderer (same as public).
+ */
 export function LivePreview({
   draft,
   companyId,
-  companyName,
+  company,
+  slug,
 }: LivePreviewProps) {
   const jobsQuery = useJobsQuery(companyId, { is_active: true })
   const activeJobs = jobsQuery.data?.items ?? []
@@ -71,7 +82,7 @@ export function LivePreview({
     const observer = new ResizeObserver(update)
     observer.observe(node)
     return () => observer.disconnect()
-  }, [draft, device, activeJobs.length, companyName])
+  }, [draft, device, activeJobs.length, company.name, company.logo_url])
 
   useEffect(() => {
     if (!fullscreen) {
@@ -142,7 +153,7 @@ export function LivePreview({
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">Live preview</h2>
           <p className="truncate text-xs text-muted-foreground">
-            Updates instantly from your draft. Hidden blocks are excluded.
+            Exact public renderer · draft data · hidden blocks excluded
           </p>
         </div>
         <p className="hidden shrink-0 text-xs text-muted-foreground sm:block">
@@ -170,23 +181,25 @@ export function LivePreview({
           fullscreen ? "min-h-0" : "max-h-[min(70vh,52rem)] min-h-[28rem]",
         )}
       >
-        <div className="flex justify-center p-4">
-          <div
-            className="relative transition-[width,height] duration-200 ease-out"
-            style={{
+        <div className="flex justify-center p-6 md:p-8">
+          <motion.div
+            className="relative"
+            animate={{
               width: preset.width * scale,
               height: frameHeight * scale,
             }}
+            transition={PREVIEW_SPRING}
           >
-            <div
+            <motion.div
               ref={frameRef}
               className="absolute top-0 left-0 overflow-hidden rounded-lg border border-border bg-background shadow-lg"
-              style={{
+              animate={{
                 width: preset.width,
                 minHeight: preset.minHeight,
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
+                scale,
               }}
+              style={{ transformOrigin: "top left" }}
+              transition={PREVIEW_SPRING}
             >
               <div
                 className="flex h-8 items-center gap-1.5 border-b border-border bg-muted/50 px-3"
@@ -196,16 +209,18 @@ export function LivePreview({
                 <span className="size-1.5 rounded-full bg-foreground/20" />
                 <span className="size-1.5 rounded-full bg-foreground/20" />
                 <span className="ml-2 truncate text-[10px] text-muted-foreground">
-                  /careers · {preset.label}
+                  /careers/{slug} · {preset.label}
                 </span>
               </div>
-              <PreviewDocument
-                draft={draft}
+              <CareersPageRenderer
+                config={draft}
+                company={company}
                 jobs={activeJobs}
-                companyName={companyName}
+                slug={slug}
+                disableNavigation
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>

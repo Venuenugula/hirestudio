@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createBenefitItem } from "@/features/pages/lib/page-config"
+import {
+  ABOUT_VARIANTS,
+  BENEFITS_VARIANTS,
+  CTA_VARIANTS,
+  HERO_VARIANTS,
+  JOBS_VARIANTS,
+} from "@/features/pages/lib/design-system"
 import type { BenefitItem, PageSection } from "@/features/pages/types"
 
 type SectionFieldsProps = {
@@ -17,6 +24,12 @@ type SectionFieldsProps = {
 export function SectionFields({ section, disabled, onChange }: SectionFieldsProps) {
   return (
     <div className="space-y-4 border-t border-border px-4 py-4">
+      <VariantSelect
+        section={section}
+        disabled={disabled}
+        onChange={onChange}
+      />
+
       {"title" in section ? (
         <Field label="Title" htmlFor={`${section.id}-title`}>
           <Input
@@ -119,6 +132,74 @@ export function SectionFields({ section, disabled, onChange }: SectionFieldsProp
       ) : null}
     </div>
   )
+}
+
+function VariantSelect({
+  section,
+  disabled,
+  onChange,
+}: {
+  section: PageSection
+  disabled?: boolean
+  onChange: (sectionId: string, patch: Partial<PageSection>) => void
+}) {
+  const options =
+    section.type === "hero"
+      ? HERO_VARIANTS.map((value) => ({
+          value,
+          label: labelize(value),
+        }))
+      : section.type === "about"
+        ? ABOUT_VARIANTS.map((value) => ({
+            value,
+            label: labelize(value),
+          }))
+        : section.type === "benefits"
+          ? BENEFITS_VARIANTS.map((value) => ({
+              value,
+              label: labelize(value),
+            }))
+          : section.type === "open_roles"
+            ? JOBS_VARIANTS.map((value) => ({
+                value,
+                label: labelize(value),
+              }))
+            : CTA_VARIANTS.map((value) => ({
+                value,
+                label: labelize(value),
+              }))
+
+  const value =
+    ("variant" in section ? section.variant : undefined) ?? options[0]?.value
+
+  return (
+    <Field label="Layout variant" htmlFor={`${section.id}-variant`}>
+      <select
+        id={`${section.id}-variant`}
+        value={value}
+        disabled={disabled}
+        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+        onChange={(event) =>
+          onChange(section.id, {
+            variant: event.target.value,
+          } as Partial<PageSection>)
+        }
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </Field>
+  )
+}
+
+function labelize(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
 }
 
 function BenefitsItemsEditor({

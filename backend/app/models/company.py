@@ -22,6 +22,9 @@ class Company(TimestampedBase):
     slug: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     logo_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     banner_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    website: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    industry: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    company_size: Mapped[str | None] = mapped_column(String(50), nullable=True)
     primary_color: Mapped[str] = mapped_column(
         String(32),
         nullable=False,

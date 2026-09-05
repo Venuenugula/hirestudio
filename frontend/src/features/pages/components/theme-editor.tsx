@@ -21,7 +21,7 @@ export function ThemeEditor({ theme, disabled, onChange }: ThemeEditorProps) {
       <CardHeader>
         <CardTitle>Theme</CardTitle>
         <CardDescription>
-          Colors persist to draft_config and update the live preview immediately.
+          Colors update the live preview immediately and apply to the public site after you publish.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">

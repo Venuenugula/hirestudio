@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-const optionalUrl = z
+const optionalHttpUrl = z
   .string()
   .max(1024, "URL must be at most 1024 characters")
   .refine(
@@ -12,13 +12,43 @@ const optionalUrl = z
     return trimmed === "" ? null : trimmed
   })
 
+const optionalAssetUrl = z
+  .string()
+  .max(1024, "URL must be at most 1024 characters")
+  .refine(
+    (value) => {
+      const trimmed = value.trim()
+      if (trimmed === "") {
+        return true
+      }
+      if (trimmed.startsWith("/uploads/")) {
+        return true
+      }
+      return /^https?:\/\/.+/i.test(trimmed)
+    },
+    "Enter a valid http(s) URL, uploaded asset, or leave blank",
+  )
+  .transform((value) => {
+    const trimmed = value.trim()
+    return trimmed === "" ? null : trimmed
+  })
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .transform((value) => {
+      const trimmed = value.trim()
+      return trimmed === "" ? null : trimmed
+    })
+
 const colorSchema = z
   .string()
   .min(1, "Color is required")
   .max(32, "Color must be at most 32 characters")
   .regex(
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/,
-    "Use a hex color like #111111",
+    "Use a hex color like #0F766E",
   )
 
 export const companyFormSchema = z.object({
@@ -32,8 +62,11 @@ export const companyFormSchema = z.object({
     .trim()
     .min(1, "Slug is required")
     .max(100, "Slug must be at most 100 characters"),
-  logo_url: optionalUrl,
-  banner_url: optionalUrl,
+  logo_url: optionalAssetUrl,
+  banner_url: optionalAssetUrl,
+  website: optionalHttpUrl,
+  industry: optionalText(150),
+  company_size: optionalText(50),
   primary_color: colorSchema,
   secondary_color: colorSchema,
   is_active: z.boolean(),
@@ -47,7 +80,10 @@ export const companyFormDefaults: CompanyFormValues = {
   slug: "",
   logo_url: "",
   banner_url: "",
-  primary_color: "#111111",
-  secondary_color: "#FFFFFF",
+  website: "",
+  industry: "",
+  company_size: "",
+  primary_color: "#0F766E",
+  secondary_color: "#F8FAFC",
   is_active: true,
 }

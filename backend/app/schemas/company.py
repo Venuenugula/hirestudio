@@ -9,6 +9,9 @@ class CompanyCreate(BaseModel):
     slug: str = Field(min_length=1, max_length=100)
     logo_url: str | None = Field(default=None, max_length=1024)
     banner_url: str | None = Field(default=None, max_length=1024)
+    website: str | None = Field(default=None, max_length=1024)
+    industry: str | None = Field(default=None, max_length=150)
+    company_size: str | None = Field(default=None, max_length=50)
     primary_color: str = Field(default="#111111", max_length=32)
     secondary_color: str = Field(default="#FFFFFF", max_length=32)
     is_active: bool = True
@@ -19,6 +22,9 @@ class CompanyUpdate(BaseModel):
     slug: str | None = Field(default=None, min_length=1, max_length=100)
     logo_url: str | None = Field(default=None, max_length=1024)
     banner_url: str | None = Field(default=None, max_length=1024)
+    website: str | None = Field(default=None, max_length=1024)
+    industry: str | None = Field(default=None, max_length=150)
+    company_size: str | None = Field(default=None, max_length=50)
     primary_color: str | None = Field(default=None, max_length=32)
     secondary_color: str | None = Field(default=None, max_length=32)
     is_active: bool | None = None
@@ -32,8 +38,16 @@ class CompanyResponse(BaseModel):
     slug: str
     logo_url: str | None
     banner_url: str | None
+    website: str | None
+    industry: str | None
+    company_size: str | None
     primary_color: str
     secondary_color: str
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+
+class CompanyMediaUploadResponse(BaseModel):
+    url: str
+    kind: str

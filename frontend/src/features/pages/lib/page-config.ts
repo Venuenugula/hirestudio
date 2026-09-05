@@ -11,10 +11,26 @@ import type {
   PageTheme,
   SectionType,
 } from "@/features/pages/types"
+import {
+  ABOUT_VARIANTS,
+  BENEFITS_VARIANTS,
+  BUTTON_STYLE_IDS,
+  CTA_VARIANTS,
+  DEFAULT_DESIGN_THEME,
+  FONT_IDS,
+  HERO_VARIANTS,
+  JOBS_VARIANTS,
+  PAGE_STYLE_IDS,
+  RADIUS_IDS,
+  THEME_PACK_IDS,
+  getPageStylePreset,
+  type PageStyleId,
+} from "@/features/pages/lib/design-system"
 
 export const DEFAULT_THEME: PageTheme = {
-  primaryColor: "#111111",
-  secondaryColor: "#FFFFFF",
+  primaryColor: "#0F766E",
+  secondaryColor: "#F8FAFC",
+  ...DEFAULT_DESIGN_THEME,
 }
 
 export const EMPTY_PAGE_CONFIG: PageConfig = {
@@ -62,6 +78,7 @@ export function createHeroSection(
     subtitle:
       "Help us build the future. Explore opportunities to grow your career.",
     ctaLabel: "View open roles",
+    variant: "stacked",
     ...overrides,
   })
 }
@@ -74,6 +91,7 @@ export function createAboutSection(
     type: "about",
     title: "About us",
     body: "Customize this section to tell candidates about your mission, culture, and values.",
+    variant: "text",
     ...overrides,
   })
 }
@@ -96,6 +114,7 @@ export function createBenefitsSection(
     id: createId(),
     type: "benefits",
     title: "Benefits & perks",
+    variant: "grid",
     items: [
       createBenefitItem({
         title: "Flexible Work",
@@ -127,6 +146,7 @@ export function createOpenRolesSection(
     type: "open_roles",
     title: "Open roles",
     subtitle: "Find a role that matches your skills and ambitions.",
+    variant: "cards",
     ...overrides,
   })
 }
@@ -140,6 +160,7 @@ export function createCtaSection(
     title: "Ready to make an impact?",
     subtitle: "Browse our open positions.",
     buttonLabel: "See open roles",
+    variant: "solid",
     ...overrides,
   })
 }
@@ -178,17 +199,20 @@ export function duplicateSection(section: PageSection): PageSection {
         title: section.title,
         subtitle: section.subtitle,
         ctaLabel: section.ctaLabel,
+        variant: section.variant,
         hidden: section.hidden,
       })
     case "about":
       return createAboutSection({
         title: section.title,
         body: section.body,
+        variant: section.variant,
         hidden: section.hidden,
       })
     case "benefits":
       return createBenefitsSection({
         title: section.title,
+        variant: section.variant,
         hidden: section.hidden,
         items: section.items.map((item) =>
           createBenefitItem({
@@ -201,6 +225,7 @@ export function duplicateSection(section: PageSection): PageSection {
       return createOpenRolesSection({
         title: section.title,
         subtitle: section.subtitle,
+        variant: section.variant,
         hidden: section.hidden,
       })
     case "cta":
@@ -208,6 +233,7 @@ export function duplicateSection(section: PageSection): PageSection {
         title: section.title,
         subtitle: section.subtitle,
         buttonLabel: section.buttonLabel,
+        variant: section.variant,
         hidden: section.hidden,
       })
   }
@@ -233,6 +259,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
+function oneOf<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  return typeof value === "string" && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : fallback
+}
+
 function normalizeTheme(value: unknown): PageTheme {
   if (!isRecord(value)) {
     return { ...DEFAULT_THEME }
@@ -247,6 +283,19 @@ function normalizeTheme(value: unknown): PageTheme {
       typeof value.secondaryColor === "string" && value.secondaryColor
         ? value.secondaryColor
         : DEFAULT_THEME.secondaryColor,
+    styleId: oneOf(value.styleId, PAGE_STYLE_IDS, DEFAULT_THEME.styleId!),
+    themePackId: oneOf(
+      value.themePackId,
+      THEME_PACK_IDS,
+      DEFAULT_THEME.themePackId!,
+    ),
+    fontId: oneOf(value.fontId, FONT_IDS, DEFAULT_THEME.fontId!),
+    radiusId: oneOf(value.radiusId, RADIUS_IDS, DEFAULT_THEME.radiusId!),
+    buttonStyle: oneOf(
+      value.buttonStyle,
+      BUTTON_STYLE_IDS,
+      DEFAULT_THEME.buttonStyle!,
+    ),
   }
 }
 
@@ -288,6 +337,7 @@ function normalizeSection(value: unknown): PageSection | null {
         typeof value.ctaLabel === "string"
           ? value.ctaLabel
           : "View open roles",
+      variant: oneOf(value.variant, HERO_VARIANTS, "stacked"),
       hidden,
     })
   }
@@ -301,6 +351,7 @@ function normalizeSection(value: unknown): PageSection | null {
         typeof value.body === "string"
           ? value.body
           : "Customize this section to tell candidates about your mission, culture, and values.",
+      variant: oneOf(value.variant, ABOUT_VARIANTS, "text"),
       hidden,
     })
   }
@@ -317,6 +368,7 @@ function normalizeSection(value: unknown): PageSection | null {
       type: "benefits",
       title:
         typeof value.title === "string" ? value.title : "Benefits & perks",
+      variant: oneOf(value.variant, BENEFITS_VARIANTS, "grid"),
       items:
         items.length > 0
           ? items
@@ -339,6 +391,7 @@ function normalizeSection(value: unknown): PageSection | null {
         typeof value.subtitle === "string"
           ? value.subtitle
           : "Find a role that matches your skills and ambitions.",
+      variant: oneOf(value.variant, JOBS_VARIANTS, "cards"),
       hidden,
     })
   }
@@ -359,6 +412,7 @@ function normalizeSection(value: unknown): PageSection | null {
         typeof value.buttonLabel === "string"
           ? value.buttonLabel
           : "See open roles",
+      variant: oneOf(value.variant, CTA_VARIANTS, "solid"),
       hidden,
     })
   }
@@ -420,6 +474,7 @@ function serializeSection(section: PageSection): PageSection {
         title: section.title,
         subtitle: section.subtitle,
         ctaLabel: section.ctaLabel,
+        variant: section.variant ?? "stacked",
         ...hidden,
       }
     case "about":
@@ -428,6 +483,7 @@ function serializeSection(section: PageSection): PageSection {
         type: "about",
         title: section.title,
         body: section.body,
+        variant: section.variant ?? "text",
         ...hidden,
       }
     case "benefits":
@@ -435,6 +491,7 @@ function serializeSection(section: PageSection): PageSection {
         id: section.id,
         type: "benefits",
         title: section.title,
+        variant: section.variant ?? "grid",
         items: section.items.map((item) => ({
           id: item.id,
           title: item.title,
@@ -448,6 +505,7 @@ function serializeSection(section: PageSection): PageSection {
         type: "open_roles",
         title: section.title,
         subtitle: section.subtitle,
+        variant: section.variant ?? "cards",
         ...hidden,
       }
     case "cta":
@@ -457,6 +515,7 @@ function serializeSection(section: PageSection): PageSection {
         title: section.title,
         subtitle: section.subtitle,
         buttonLabel: section.buttonLabel,
+        variant: section.variant ?? "solid",
         ...hidden,
       }
   }
@@ -467,6 +526,11 @@ export function serializePageConfig(config: PageConfig): PageConfig {
     theme: {
       primaryColor: config.theme.primaryColor,
       secondaryColor: config.theme.secondaryColor,
+      styleId: config.theme.styleId,
+      themePackId: config.theme.themePackId,
+      fontId: config.theme.fontId,
+      radiusId: config.theme.radiusId,
+      buttonStyle: config.theme.buttonStyle,
     },
     ...(config.template
       ? {
@@ -477,6 +541,39 @@ export function serializePageConfig(config: PageConfig): PageConfig {
         }
       : {}),
     sections: config.sections.map((section) => serializeSection(section)),
+  }
+}
+
+/** Apply a visual style preset to theme tokens and section layout variants. */
+export function applyPageStylePreset(
+  config: PageConfig,
+  styleId: PageStyleId,
+): PageConfig {
+  const preset = getPageStylePreset(styleId)
+  return {
+    ...config,
+    theme: {
+      ...config.theme,
+      styleId: preset.id,
+      fontId: preset.defaults.fontId,
+      radiusId: preset.defaults.radiusId,
+      buttonStyle: preset.defaults.buttonStyle,
+    },
+    sections: config.sections.map((section) => {
+      if (section.type === "hero") {
+        return { ...section, variant: preset.defaults.heroVariant }
+      }
+      if (section.type === "about") {
+        return { ...section, variant: preset.defaults.aboutVariant }
+      }
+      if (section.type === "benefits") {
+        return { ...section, variant: preset.defaults.benefitsVariant }
+      }
+      if (section.type === "open_roles") {
+        return { ...section, variant: preset.defaults.jobsVariant }
+      }
+      return { ...section, variant: preset.defaults.ctaVariant }
+    }),
   }
 }
 
@@ -499,6 +596,23 @@ export function sectionLabel(type: SectionType | ComingSoonSectionType): string 
     case "faq":
       return "FAQ"
   }
+}
+
+/** Preferred public page flow: story → jobs → closing CTA. */
+export const PUBLIC_SECTION_ORDER: SectionType[] = [
+  "hero",
+  "about",
+  "benefits",
+  "open_roles",
+  "cta",
+]
+
+export function sortSectionsForPublic(sections: PageSection[]): PageSection[] {
+  const rank = (type: SectionType) => {
+    const index = PUBLIC_SECTION_ORDER.indexOf(type)
+    return index === -1 ? PUBLIC_SECTION_ORDER.length : index
+  }
+  return [...sections].sort((a, b) => rank(a.type) - rank(b.type))
 }
 
 export function sectionPreviewTitle(section: PageSection): string {

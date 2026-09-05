@@ -2,6 +2,7 @@ import {
   sectionLabel,
   sectionPreviewTitle,
 } from "@/features/pages/lib/page-config"
+import { SECTION_ICONS } from "@/features/pages/lib/section-icons"
 import type { PageSection } from "@/features/pages/types"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +35,7 @@ export function SectionNavigator({
         {sections.map((section) => {
           const active = section.id === expandedSectionId
           const hidden = section.hidden === true
+          const Icon = SECTION_ICONS[section.type]
           return (
             <li key={section.id} className="shrink-0 lg:w-full">
               <button
@@ -48,14 +50,7 @@ export function SectionNavigator({
                   hidden && !active && "text-muted-foreground",
                 )}
               >
-                <span
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    active ? "bg-primary-foreground" : "bg-foreground/40",
-                    hidden && !active && "bg-muted-foreground/50",
-                  )}
-                  aria-hidden
-                />
+                <Icon className="size-3.5 shrink-0 opacity-80" aria-hidden />
                 <span className="min-w-0 truncate font-medium">
                   {sectionLabel(section.type)}
                 </span>

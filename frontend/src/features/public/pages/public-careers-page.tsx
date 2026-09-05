@@ -5,23 +5,12 @@ import {
   isSectionVisible,
   normalizePageConfig,
 } from "@/features/pages/lib/page-config"
-import type { PageSection } from "@/features/pages/types"
-import type { Job } from "@/features/jobs/types"
-import { PublicAbout } from "@/features/public/components/public-about"
-import { PublicBenefits } from "@/features/public/components/public-benefits"
-import { PublicCta } from "@/features/public/components/public-cta"
+import { CareersPageRenderer } from "@/features/public/components/careers-page-renderer"
 import { PublicErrorPage } from "@/features/public/components/public-error-page"
-import { PublicFooter } from "@/features/public/components/public-footer"
-import { PublicHero } from "@/features/public/components/public-hero"
-import { PublicJobList } from "@/features/public/components/public-job-list"
-import { PublicShell } from "@/features/public/components/public-shell"
 import { PublicSiteSkeleton } from "@/features/public/components/public-skeletons"
 import { useDocumentMeta } from "@/features/public/hooks/use-document-meta"
 import { usePublicSiteQuery } from "@/features/public/hooks/use-public-site-query"
-import {
-  buildMetaDescription,
-  resolvePublicTheme,
-} from "@/features/public/lib/theme"
+import { buildMetaDescription } from "@/features/public/lib/theme"
 
 export function PublicCareersPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -70,16 +59,10 @@ function PublicCareersContent({
   data: NonNullable<ReturnType<typeof usePublicSiteQuery>["data"]>
 }) {
   const { company, careers_page, jobs } = data
-  const publishedConfig = careers_page?.published_config ?? {}
-  const pageConfig = normalizePageConfig(publishedConfig)
-  const theme = resolvePublicTheme(publishedConfig, company)
+  const pageConfig = normalizePageConfig(careers_page?.published_config ?? {})
   const visibleSections = pageConfig.sections.filter(isSectionVisible)
-
   const aboutSection = visibleSections.find((section) => section.type === "about")
   const heroSection = visibleSections.find((section) => section.type === "hero")
-  const hasOpenRolesSection = pageConfig.sections.some(
-    (section) => section.type === "open_roles",
-  )
 
   useDocumentMeta({
     title: `Careers at ${company.name}`,
@@ -91,73 +74,12 @@ function PublicCareersContent({
     }),
   })
 
-  const scrollToJobs = () => {
-    document.getElementById("open-roles")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    })
-  }
-
   return (
-    <PublicShell company={company} theme={theme}>
-      {visibleSections.map((section) => (
-        <PublicSection
-          key={section.id}
-          section={section}
-          companyName={company.name}
-          jobs={jobs}
-          slug={slug}
-          onScrollToJobs={scrollToJobs}
-        />
-      ))}
-      {!hasOpenRolesSection ? (
-        <PublicJobList jobs={jobs} slug={slug} />
-      ) : null}
-      <PublicFooter companyName={company.name} />
-    </PublicShell>
+    <CareersPageRenderer
+      config={pageConfig}
+      company={company}
+      jobs={jobs}
+      slug={slug}
+    />
   )
-}
-
-function PublicSection({
-  section,
-  companyName,
-  jobs,
-  slug,
-  onScrollToJobs,
-}: {
-  section: PageSection
-  companyName: string
-  jobs: Job[]
-  slug: string
-  onScrollToJobs: () => void
-}) {
-  if (section.type === "hero") {
-    return (
-      <PublicHero
-        section={section}
-        companyName={companyName}
-        onCtaClick={onScrollToJobs}
-      />
-    )
-  }
-
-  if (section.type === "about") {
-    return <PublicAbout section={section} />
-  }
-
-  if (section.type === "benefits") {
-    return <PublicBenefits section={section} />
-  }
-
-  if (section.type === "open_roles") {
-    return (
-      <PublicJobList
-        jobs={jobs}
-        slug={slug}
-        section={{ title: section.title, subtitle: section.subtitle }}
-      />
-    )
-  }
-
-  return <PublicCta section={section} onButtonClick={onScrollToJobs} />
 }

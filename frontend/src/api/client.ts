@@ -1,7 +1,36 @@
+export class ApiError extends Error {
+  readonly status: number
+  readonly detail: string
+
+  constructor(status: number, detail: string) {
+    super(detail)
+    this.name = "ApiError"
+    this.status = status
+    this.detail = detail
+  }
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""
 
 type RequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown
+}
+
+async function parseErrorDetail(response: Response): Promise<string> {
+  try {
+    const data: unknown = await response.json()
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "detail" in data &&
+      typeof (data as { detail: unknown }).detail === "string"
+    ) {
+      return (data as { detail: string }).detail
+    }
+  } catch {
+    // Fall through to status text.
+  }
+  return response.statusText || "Request failed"
 }
 
 export async function apiClient<T>(
@@ -13,14 +42,15 @@ export async function apiClient<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
     headers: {
-      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       ...headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    throw new ApiError(response.status, await parseErrorDetail(response))
   }
 
   if (response.status === 204) {

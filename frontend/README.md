@@ -6,10 +6,10 @@ React SPA for recruiters and the public careers experience.
 
 - React + TypeScript + Vite
 - Tailwind CSS v4
-- shadcn/ui (configured via `components.json`)
+- shadcn/ui
 - React Router
 - TanStack Query
-- React Hook Form + Zod
+- next-themes + Sonner
 
 ## Setup
 
@@ -36,14 +36,21 @@ Leave `VITE_API_BASE_URL` empty in local development to use the Vite proxy to `h
 
 ```
 src/
-├── api/           # HTTP client and endpoint helpers
-├── components/ui/ # shadcn primitives
-├── features/      # Domain feature modules
-├── hooks/         # Shared hooks
-├── layouts/       # App shells
-├── lib/           # Shared libraries (cn, etc.)
-├── providers/     # React context providers
-├── routes/        # Route tree and page components
-├── types/         # Shared types
-└── utils/         # Pure helpers
+├── api/                 # HTTP client, query keys, endpoint helpers
+├── components/
+│   ├── layout/          # Sidebar, header
+│   ├── shared/          # PageHeader, EmptyState, etc.
+│   └── ui/              # shadcn primitives
+├── features/            # Domain feature modules (mirrors backend)
+├── hooks/               # Shared TanStack Query hooks
+├── layouts/             # App / Auth shells
+├── lib/                 # utils, toast helpers
+├── providers/           # Query, theme, toaster
+└── routes/              # Route tree + path constants
 ```
+
+## Routes
+
+- `/` — foundation home + health check sample
+- `/login` — auth placeholder (no sidebar)
+- `/dashboard`, `/company`, `/careers-page`, `/jobs` — app shell placeholders
